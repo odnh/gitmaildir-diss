@@ -1,0 +1,31 @@
+Subject: Phase 1 - Hope: A strongly consistent index for email using git and MirageOS.
+
+Phase 1 Project Selection Status Report
+
+Name: Oliver Hope
+
+College: Jesus
+
+User Identifier: oh260
+
+Director of Studies: Cecilia Mascolo
+
+Please complete 1, 2 and 3 below.
+
+1. Please write 100 words on your current project ideas.
+                                                                
+I aim to build a strongly consistent index on top of email, by using version control techniques. This will be by using a git overlay on top of a maildir format mailbox. Then filesystem operations can be grouped into commits, and branches can be used to keep track of changes to be made to the index. This can then be implemented on MirageOS as it provides helpful libraries and is not tied to POSIX conventions for the filesystem. This would aim to accelerate the use of maildir and also add extra functionality.
+
+2. Please list names of potential project supervisors.
+Anil Madhavapeddy
+
+3. Is there any chance that your project will involve any
+computing resources other than the Computing Service's MCS and
+software that is already installed there, for example: your own
+machine, machines in College, special peripherals, imported
+software packages, special hardware, network access, substantial
+extra disc space on the MCS.
+
+If so indicate below what, and what it is needed for.
+
+I plan to use my own computer to complete most of the work. It is an apple macbook pro, running mac osx. For testing purposes I may use my own Cambridge mailbox, as it already contains a large number of emails sorted into different directories, but I also plan to generate mailboxes to test on.
