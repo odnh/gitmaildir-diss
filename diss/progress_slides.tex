@@ -1,5 +1,7 @@
+%! TeX program = lualatex
 \documentclass{beamer}
 \usetheme{metropolis}           % Use metropolis theme
+
 \title{A strongly consistent index for email using git and MirageOS}
 \date{}
 \author{Oliver Hope}
@@ -8,18 +10,18 @@
 
   \maketitle
 
-  \begin{frame}{What?}
+  \begin{frame}[fragile]{What?}
     What has been built?
 
     \begin{itemize}
-      \item A library called \emph{gitmaildir} - An OCaml library to interface with and perform operations on the type of maildir in a git store that I have created
-      \item An application called \emph{gitmaildir\_cli} - A command line client to allow inteaction with a gitmaildir form the commandline
-      \item An application called \emph{gitmaildir\_daemon} - A daemon that keeps a standard maildir in sync with a gitmaildir allowing applications that use standard maildirs to interact without needing further changes
+      \item A library called \emph{gitmaildir} --- An OCaml library to interface with and perform operations on the type of maildir in a git store that I have created
+      \item An application called \emph{gitmaildir\_cli} --- A command line client to allow inteaction with a gitmaildir form the commandline
+      \item An application called \emph{gitmaildir\_daemon} --- A daemon that keeps a standard maildir in sync with a gitmaildir allowing applications that use standard maildirs to interact without needing further changes
     \end{itemize}
   \end{frame}
 
   \begin{frame}{Why?}
-    Maildir is a well known mail storage format for unix-like systems. Its benefits are:
+    Maildir is a well-known mail storage format for unix-like systems. Its benefits are:
     \begin{itemize}
       \item Allows lots of concurrent access
       \item Mail client does not have to worry as managed by the filesystem
@@ -34,7 +36,7 @@
   \begin{frame}{How?}
     It turns out that MirageOS has some libraries that are useful in working with both git stores and email parsing using OCaml. (ocaml-git and MrMime)
 
-    Therefore the entire project is written in OCaml making heavy use of these libraries.
+    Therefore, the entire project is written in OCaml making heavy use of these libraries.
 
     Everything that modifies the gitmaildir is written using a library called Lwt. This is a form of promise and allows operations to be combined in a monadic style. Another benefit of this is that we can easily parallelize functionality when necessary.
   \end{frame}
