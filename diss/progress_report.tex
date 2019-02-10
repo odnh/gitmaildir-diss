@@ -1,5 +1,4 @@
-% Note: this file can be compiled on its own, but is also included by
-% diss.tex (using the docmute.sty package to ignore the preamble)
+% arara: lualatex
 \documentclass[12pt,a4paper,twoside]{article}
 \usepackage[pdfborder={0 0 0}]{hyperref}
 \usepackage[margin=25mm]{geometry}
@@ -34,16 +33,14 @@
 
 \section*{Progress compared to the schedule}
 
-Currently the project is on track compared to the original schedule. According to the proposal, at this point the core of the project was meant to be complete in OCaml which is the case. Furthermore, this was intedted to be the stage where imlementation of extensions starts to takew place alongside the building of test frameworks to gather data for evaluation. These are both currently in the early stages but have begun. This shows that while the project is not ahead it is not behind, so should be finished in good time.
+Currently the project is on track compared to the original schedule. According to the proposal, at this point the milestone that was supposed to be reached was `OCaml application complete' and this is the case. Furthermore, the next milestone is `Testing of all basic features complete' and I have begun building test frameworks to gather data for evaluation alongside starting on some parts of the extensions. This shows that while the project is not ahead of schedule, it is also not behind, so should be finished in good time.
 
 \section*{Difficulties encountered}
 
-The project has run relatively smoothly. However, I did have to modify the schedule slightly, moving from prototyping to implementation more quickly than originally expected as there was more that needed re-implementing in OCaml compared to the commandline tool than I was orginally expecting. Also, I had some difficualty at first working out how to use the necessary libraries but this has all been resolved at this point.
-
-Something else that should be noted is that while one of the original success criteria was ``Implementation of a working git overlay on top of the \emph{filesystem in MirageOS}'' what I have actually created is a tool with Mirage libraries that functions on UNIX-like systems. This is after discussion wiht my supervisor as we deemed it a more interesting problem. However, due to the nature of the libraries that I am using and OCaml functors, the majority of my code will function in exactly the same manner on MirageOS, there will just be less interesting things for it to do.
+The project has run relatively smoothly overall. However, I did have to modify the schedule slightly, moving from prototyping to implementation more quickly than originally expected. This was because there was more that needed re-implementing in OCaml compared to the commandline tool than I had at first anticipated. Also, I had some difficulty at first working out how to use the necessary libraries due to a lack of complete doeumentation. However, at this point all of these problems have been resolved.
 
 \section*{What has been accomplished}
 
-Thus far I have created a library in OCaml which, with the help of an ocaml-git library, allows me to perfrom git plumbing commands in OCaml. Using this I have then implemented the necessary functions for basic interaction with a maildir in a git store through OCaml. Finally, I have created a commandline interface that wraps this, allowing for interaction from users and other programs. This tool also syncs a standard maildir with the git store and handles any issues of concurrency upon modificaiton attempts from multiple concurrent processes.
+Thus far I have created a library in OCaml which, with the help of a MirageOS library called ocaml-git, allows me to perform git plumbing commands in OCaml. Using this I have then implemented the necessary functions for basic interaction with a maildir in a git store through OCaml. Finally, I have created a commandline interface that wraps this, allowing for interaction from users and other programs. This tool also syncs a standard maildir with the git store and handles any issues of concurrency upon modification attempts from multiple concurrent processes.
 
 \end{document}
