@@ -257,3 +257,6 @@ TSWLatexianTemp*
 
 # standalone packages
 *.sta
+
+# pdf files (don't really want in git)
+*.pdf
