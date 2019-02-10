@@ -1,7 +1,7 @@
 %! TeX program = lualatex
 % arara: lualatex: { synctex: yes, shell: yes }
 \documentclass{beamer}
-\usetheme{metropolis}           % Use metropolis theme
+\usetheme{metropolis}
 
 % Uncomment for handout
 %\usepackage{pgfpages}
@@ -26,7 +26,7 @@
     What is Git?
 
     \begin{itemize}
-      \item CAS
+      \item Content addressable storage
       \item Porcelain
       \item Plumbing
     \end{itemize}
@@ -52,7 +52,7 @@
 
     Uses OCaml functors --- Easy to swap out backend
 
-    Used Lwt everywhere --- Useful for concurrency
+    Written using a concurrency monad (Lwt) --- Easy scaling
   \end{frame}
 
   \begin{frame}{What's left?}
