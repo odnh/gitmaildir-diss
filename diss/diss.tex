@@ -1,4 +1,7 @@
 % arara: lualatex: { synctex: yes, shell: yes }
+% arara: bibtex
+% arara: lualatex
+% arara: lualatex
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
@@ -63,7 +66,7 @@ by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 
 \section*{Original Aims of the Project}
 
-The original aims of the project were to create a new type of maildir on top of a git store. This was to provide the consistency that maildir does not afford whilst mitigating some of the problems with mbox that inspired the creation of maildir in the first place. Futhermore using git for mail storage allows for many novel features that can be implemented, and some examples of such features were a further aim.
+The original aims of the project were to create a new type of maildir\cite{maildir-man} on top of a git store. This was to provide the consistency that maildir does not afford whilst mitigating some of the problems with mbox that inspired the creation of maildir in the first place. Futhermore using git for mail storage allows for many novel features that can be implemented, and some examples of such features were a further aim.
 
 \section*{Work Completed}
 
