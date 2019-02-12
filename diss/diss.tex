@@ -63,7 +63,11 @@ by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 
 \section*{Original Aims of the Project}
 
+The original aims of the project were to create a new type of maildir on top of a git store. This was to provide the consistency that maildir does not afford whilst mitigating some of the problems with mbox that inspired the creation of maildir in the first place. Futhermore using git for mail storage allows for many novel features that can be implemented, and some examples of such features were a further aim.
+
 \section*{Work Completed}
+
+The core of the project built was a library, gitmaildir, which handles interaction with a gitmaildir. Then there are also two helper tools: gitmaildir\_cli a command-line interface for gitmaildirs and gitmaildir\_daemon, a daemon to sync a gitmaildir with a standard maildir. Also two extensions have been completed: branching based on reply threads and branching for preprocessing of mail for different devices. Of course as part of this it was necessary to design how a gitmaildir would work and write some code to create metrics for performance testing.
 
 \section*{Special Difficulties}
 
