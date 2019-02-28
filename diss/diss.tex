@@ -1,7 +1,4 @@
-% arara: lualatex: { synctex: yes, shell: yes }
-% arara: bibtex
-% arara: lualatex
-% arara: lualatex
+% arara: latexmk: { engine: lualatex, options: [-shell-escape, -bibtex, -synctex=1] }
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
@@ -9,6 +6,7 @@
 \usepackage{verbatim}
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 \usepackage{makecell}  % for overfull title table cell in proforma
+\usepackage{adjustbox} % for the proforma table (resizes to get rid of latex warnings)
 
 \raggedbottom                           % try to avoid widows and orphans
 \sloppy
@@ -47,19 +45,22 @@ Jesus College \\[5mm]
 
 \chapter*{Proforma}
 
+\begin{adjustbox}{width={\textwidth},totalheight={\textheight},keepaspectratio}%
 {\large
 \begin{tabular}{ll}
 Name:               & \bf Oliver Hope \\
 College:            & \bf Jesus College \\
 Project Title:      & \makecell[l]{\bf A strongly consistent index for email using git \\ \bf and MirageOS.} \\
 Examination:        & \bf Computer Science Tripos -- Part II, June 2019 \\
-Word Count:         & \bf 1587\footnotemark[1] \\
+Word Count:         & \bf \input{|"texcount -sum -1 diss.tex"}\footnotemark[1] \\
+Line Count:         & INSERT LINE COUNT \\
 Project Originator: & Dr M.~Madhavapeddy \\
 Supervisor:         & Mr D.~Allsopp \\
 \end{tabular}
 }
+\end{adjustbox}
 \footnotetext[1]{This word count was computed
-by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
+by \texttt{texcount -sum -1 diss.tex}
 }
 \stepcounter{footnote}
 
@@ -75,7 +76,7 @@ The core of the project built was a library, gitmaildir, which handles interacti
 \section*{Special Difficulties}
 
 There have been no special difficulties.
- 
+
 \newpage
 \section*{Declaration}
 
@@ -133,6 +134,10 @@ The project aims to solve this problem by combining the Maildir format with a Gi
 \chapter{Preparation}
 
 \section{Plan Refinement}
+
+\subsection{Requirements}
+
+\subsection{Plan modifications and clarifications}
 
 \section{OCaml}
 
