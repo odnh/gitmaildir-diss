@@ -1,4 +1,5 @@
 % arara: latexmk: { engine: lualatex, options: [-shell-escape, -bibtex, -synctex=1] }
+%TC:ignore
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
@@ -52,7 +53,7 @@ Name:               & \bf Oliver Hope \\
 College:            & \bf Jesus College \\
 Project Title:      & \makecell[l]{\bf A strongly consistent index for email using git \\ \bf and MirageOS.} \\
 Examination:        & \bf Computer Science Tripos -- Part II, June 2019 \\
-Word Count:         & \bf \input{|"texcount -sum -1 diss.tex"}\footnotemark[1] \\
+Word Count:         & \bf \input{|"texcount -inc -sum -1 diss.tex"}\footnotemark[1] \\
 Line Count:         & INSERT LINE COUNT \\
 Project Originator: & Dr M.~Madhavapeddy \\
 Supervisor:         & Mr D.~Allsopp \\
@@ -98,89 +99,23 @@ extent for a comparable purpose.
 \listoffigures
 
 \newpage
+%TC:endignore
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now for the chapters
 
 \pagestyle{headings}
 
-\chapter{Introduction}
+\include{introduction}
 
-\section{Motivation}
+\include{preparation}
 
-Email is a system of electronic communication supported by most personal computing platforms. It has been in use since the very beginnings of the internet. An important part of this system is the ability to store messages. This can be both for end users for later reading and on servers while awaiting delivery. Over time there have been multiple different formats for email storage in mailboxes, one of the earliest and most widely used standards being mbox.
+\include{implementation}
 
-\subsection{Mbox}
+\include{evaluation}
 
-Mbox is in fact not one single mailbox format, but is instead a family of similar formats. What they all share in common is that they are based around the idea that an entire mailbox is stored in a single plaintext file which consists solely of a long list of emails and their content. The first version, created for 5th edition Unix, contained all the emails one after another delimited by the characters: \texttt{FROM:} at the start of a new line.
+\include{conclusions}
 
-The downsides of such an approach stem from the use of a single file and plaintext email storage. Due to the use of a single file it is not possible to have concurrent access to an mbox. This is because reading whilst someone else writes could lead to a corrupted read, and writing whilst someone else writes could corrupt the mbox in memory. The effect of this is that access and modifications are not scalable to higher levels of concurrency because it is not possible to perform operations at the same time. The other impact is that a single very large file cannot easily be distributed over multiple storage media meaning that mboxes are hard to scale for very large mailboxes. A problem which impacts implementation is that it is very possible for \texttt{FROM:} to appear in a message. This would be classed as a new email if we wrote it directly so we have to escape this usage and then unescape it when reading back the email.
-
-The mbox approach does have some benefits. Most notably, it is very simple to implement, and as we can guarantee that writes are sequential we will always have a consistent view of our mailbox.
-
-\subsection{Maildir}
-
-An alternative to mbox was created much later was Maildir, intended to solve many of the problems associated with using mbox. The architecture is entirely different, with each email being stored in a separate, uniquely named file. There are also specific rules about how files should be added to the store and modified once there.
-
-Due to its design, Maildir solves many of the problems mbox suffers from mentioned above. Having separate files allows for total concurrency in reading and writing (as long as you are not trying to modify the same email) and scalability of size is not an issue as it is relatively easy to distribute the storage of separate files across different storage media. Another benefit is that the semantics of email storage are completely removed from their contents meaning issues such as the message delimiting one mbox suffers from cannot occur. Finally, the mail clients reading a Maildir do not actually have to worry about locking as this is all handled by the filesystem, simplifying the implementation of the clients.
-
-Whilst there are many benefits to this approach, there are two downsides compared to mbox. The first is that it is more complicated, but more importantly we can no longer guarantee a consistent view of the mailbox.
-
-\section{Project goals}
-
-It would be useful to have an implementation of a mailbox format which had the benefits Maildir brings in both concurrency and scalability whilst not losing the ability to have a consistent view of the stored emails. The reason this strong consistency is beneficial is that ... !!!PUT REASONS HERE!!!.
-
-The project aims to solve this problem by combining the Maildir format with a Git layer to provide strong consistency. Furthermore the intent is that it should function on MirageOS, allowing it to be used as a mail storage backend and the use of Git will allow for the implementation of extra features allowing for new ways to use and interact with a mailbox.
-
-\chapter{Preparation}
-
-\section{Plan Refinement}
-
-\subsection{Requirements}
-
-\subsection{Plan modifications and clarifications}
-
-\section{OCaml}
-
-\section{Git and CASs}
-
-\chapter{Implementation}
-
-\section{Bash prototype}
-
-\section{Gitmaildir}
-
-\subsection{Structure Overview}
-
-\subsection{Library}
-
-\subsection{Command line interface}
-
-\subsection{Daemon}
-
-\subsection{Build system}
-
-\section{Extensions}
-
-\section{Repository Overview}
-
-\chapter{Evaluation}
-
-\section{Tests}
-
-\subsection{Performance under test}
-
-\subsection{Metrics}
-
-\section{Test suite}
-
-\section{Success critera}
-
-\subsection{Successful functionality}
-
-\subsection{Strong consistency}
-
-\chapter{Conclusions}
-
+%TC:ignore
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the bibliography
 \addcontentsline{toc}{chapter}{Bibliography}
@@ -195,3 +130,4 @@ The project aims to solve this problem by combining the Maildir format with a Gi
 \input{proposal}
 
 \end{document}
+%TC:endignore
