@@ -1,13 +1,14 @@
-% arara: latexmk: { engine: lualatex, options: [-shell-escape, -bibtex, -synctex=1] }
 %TC:ignore
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
 \usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
 \usepackage{verbatim}
-\usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 \usepackage{makecell}  % for overfull title table cell in proforma
 \usepackage{adjustbox} % for the proforma table (resizes to get rid of latex warnings)
+\usepackage[backend=biber,style=numeric]{biblatex}
+\addbibresource{refs.bib}
+\usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 
 \raggedbottom                           % try to avoid widows and orphans
 \sloppy
@@ -19,12 +20,8 @@
 
 \begin{document}
 
-\bibliographystyle{plain}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title
-
 
 \pagestyle{empty}
 
@@ -68,7 +65,7 @@ by \texttt{texcount -inc -sum -1 diss.tex}
 
 \section*{Original Aims of the Project}
 
-The original aims of the project were to create a new type of maildir\cite{maildir-man} on top of a git store. This was to provide the consistency that maildir does not afford whilst mitigating some of the problems with mbox that inspired the creation of maildir in the first place. Futhermore using git for mail storage allows for many novel features that can be implemented, and some examples of such features were a further aim.
+The original aims of the project were to create a new type of maildir on top of a git store. This was to provide the consistency that maildir does not afford whilst mitigating some of the problems with mbox that inspired the creation of maildir in the first place. Futhermore using git for mail storage allows for many novel features that can be implemented, and some examples of such features were a further aim.
 
 \section*{Work Completed}
 
@@ -119,7 +116,7 @@ extent for a comparable purpose.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the bibliography
 \addcontentsline{toc}{chapter}{Bibliography}
-\bibliography{refs}
+\printbibliography
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
