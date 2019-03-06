@@ -1,19 +1,43 @@
 \chapter{Implementation}
 
+In this chapter I describe the work that was undertaken while building this project. I start by explaining my initial prototyping strategy before giving an overview of the final project structure, how each part of it was implemented and why particular design choices were made. Finally I give a short description on the extensions that were completed and an overview of the repository layout.
+
 \section{Bash prototype}
+
+At first it was necessary to test whether the operations I wanted to perform were possible at all and possible to implement in the manner that I hoped to. This was made easier by the existence of the git command-line tool. As described earlier this tool is the standard interface to a git store and also has a working implementation of all the git plumbing commands. As it is a tool intended to work in a shell environment I felt it was prudent to write bash scripts to implement each of the basic features. Bash was selected as it is the shell which I use on my personal machine and is widely supported.
+
+The features implemented in this prototype were basic email delivery, renaming, and conversion of a Maildir to a git store. These all functioned as intended (albeit with a higher level of manual intervention than exists in the final codebase). Due to the success of the prototype, I knew that what I wanted to implement was possible in the way I intended to do it.
 
 \section{Gitmaildir}
 
-\subsection{Structure Overview}
+In this section I describe the the implementation of the final application which I have named ``Gitmaildir'', a portmanteau of ``Git'' and ``Maildir'', the fusion of which is my entire project.
+
+\subsection{Structural overview}
+
+The project is split into 3 logically distinct sections. \texttt{gitmaildir} which is an OCaml library providing all of the functionality necessary to interact with a gitmaildir. Then there is \texttt{gitmaildir\_cli}. This is a command-line tool to interact with a gitmaildir. It is written in OCaml and uses the features of the \texttt{gitmaildir} library. It is really a demo tool to show what operations can be performed and actuallt have them implemented correctly. Finally, we have \texttt{gitmaildir\_daemon} which is another command-line application. It runs as a daemon, syncronising a standard Maildir with a Gitmaildir to allow applications implemented to use a Maildir to indirectly use a Gitmaildir.
 
 \subsection{Library}
+
+The Gitmaildir library provides the following features:
+
+\begin{itemize}
+\item email delivery
+\item email move/rename (this includes altering flags)
+\item email deletion
+\item conversion of a maildir to a gitmaldir (and vice versa)
+\item TODO: mention extension if implemented
+\end{itemize}
+
+All of these operations required iteraction between the filesystem and/or interaction with a git store. To manage interaction with a git store I used the library ocaml-git. As all this provided was the means to read and write different types of elements of a git store in a consistent way it was necessary to implement the functionality of some of the git plumbing commands almost from scratch.
 
 \subsection{Command line interface}
 
 \subsection{Daemon}
 
+\subsection{Concurrency protections}
+
 \subsection{Build system}
 
 \section{Extensions}
 
-\section{Repository Overview}
+\section{Repository overview}

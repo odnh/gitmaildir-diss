@@ -2,7 +2,7 @@
 
 \section{Motivation}
 
-Email is a system of electronic communication supported by most personal computing platforms. It has been in use since the very beginnings of the internet. An important part of this system is the ability to store messages. This can be both for end users for later reading and on servers while awaiting delivery. Over time there have been multiple different formats for email storage in mailboxes, one of the earliest and most widely used standards being mbox.
+Email is a system of electronic communication supported by most personal computing platforms. It has been in use since the very beginnings of the internet. An important part of this system is the ability to store messages. This can be both for end users for later reading and on servers while awaiting delivery. Over time there have been multiple different formats for email storage in mailboxes, one of the earliest and most widely used standards being mbox. In this chapter I introduce two competing standards to show where a strongly consistent index using maildir fits in.
 
 \subsection{Mbox}
 
@@ -22,6 +22,6 @@ Whilst there are many benefits to this approach, there are two downsides compare
 
 \section{Project goals}
 
-It would be useful to have an implementation of a mailbox format which had the benefits Maildir brings in both concurrency and scalability whilst not losing the ability to have a consistent view of the stored emails. The reason this strong consistency is beneficial is that ... !!!PUT REASONS HERE!!!.
+It would be useful to have an implementation of a mailbox format which had the benefits Maildir brings in both concurrency and scalability whilst not losing the ability to have a consistent view of the stored emails.
 
 The project aims to solve this problem by combining the Maildir format with a Git layer to provide strong consistency. Furthermore the intent is that it should function on MirageOS, allowing it to be used as a mail storage backend and the use of Git will allow for the implementation of extra features allowing for new ways to use and interact with a mailbox.
