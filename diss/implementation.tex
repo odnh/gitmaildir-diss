@@ -1,12 +1,12 @@
 \chapter{Implementation}
 
-In this chapter I describe the work that was undertaken while building this project. I start by explaining my initial prototyping strategy before giving an overview of the final project structure, how each part of it was implemented and why particular design choices were made. Finally I give a short description on the extensions that were completed and an overview of the repository layout.
+In this chapter I describe the work that was undertaken while building this project. I start by explaining my initial prototyping strategy before giving an overview of the final project structure, how each part of it was implemented and why particular design choices were made. Finally I give a short description of the extensions that were completed and an overview of the repository layout.
 
 \section{Bash prototype}
 
-At first it was necessary to test whether the operations I wanted to perform were possible at all and possible to implement in the manner that I hoped to. This was made easier by the existence of the git command-line tool. As described earlier this tool is the standard interface to a git store and also has a working implementation of all the git plumbing commands. As it is a tool intended to work in a shell environment I felt it was prudent to write bash scripts to implement each of the basic features. Bash was selected as it is the shell which I use on my personal machine and is widely supported.
+At first it was necessary to test whether the operations I wanted to perform were possible at all and whether they were possible to implement in the manner that I hoped. This was made easier by the existence of the git command-line tool. As described earlier, this tool is the standard interface to a git store and also has a working implementation of all of the git plumbing commands. As it is a tool intended to work in a shell environment I felt it was prudent to write bash scripts to implement each of the basic features. Bash was selected as it is the shell which I use on my personal machine and is widely supported.
 
-The features implemented in this prototype were basic email delivery, renaming, and conversion of a Maildir to a git store. These all functioned as intended (albeit with a higher level of manual intervention than exists in the final codebase). Due to the success of the prototype, I knew that what I wanted to implement was possible in the way I intended to do it.
+The features implemented in this prototype were basic email delivery, renaming, and conversion of a Maildir to a git store. These all functioned as intended (albeit with a higher level of manual intervention than exists in the final codebase). Due to the success of the prototype, I knew that what I wanted to implement was possible in the way I intended to do it. Therefore it would be possible to translate into OCaml in a more structured way with the opportunity to implement more features.
 
 \section{Gitmaildir}
 
@@ -14,23 +14,95 @@ In this section I describe the the implementation of the final application which
 
 \subsection{Structural overview}
 
-The project is split into 3 logically distinct sections. \texttt{gitmaildir} which is an OCaml library providing all of the functionality necessary to interact with a gitmaildir. Then there is \texttt{gitmaildir\_cli}. This is a command-line tool to interact with a gitmaildir. It is written in OCaml and uses the features of the \texttt{gitmaildir} library. It is really a demo tool to show what operations can be performed and actuallt have them implemented correctly. Finally, we have \texttt{gitmaildir\_daemon} which is another command-line application. It runs as a daemon, syncronising a standard Maildir with a Gitmaildir to allow applications implemented to use a Maildir to indirectly use a Gitmaildir.
+The project is split into 3 logically distinct sections:
+\begin{itemize}
+  \item \texttt{gitmaildir}, an OCaml library providing all of the functionality necessary to interact with a gitmaildir.
+  \item \texttt{gitmaildir\_cli}, a command-line tool to interact with a gitmaildir. It is written in OCaml and uses the features of the \texttt{gitmaildir} library. It is a demo tool to show what operations can be performed and to provide a correct implementation fo them.
+  \item \texttt{gitmaildir\_daemon}, another command-line application. It runs as a daemon, syncronising a standard Maildir with a Gitmaildir to allow applications which already know how too use a Maildir to use a Gitmaildir indirectly.
+\end{itemize}
+
+Making sure to follow good sofware engineering practices, I implemented unit tests for all major functionality. This was so that it could be confirmed that methods performed the same operations I expected and planned them to, so that it could be confirmed that methods were still performing the same operation after changes had been made and so that I could be sure that all edge cases worked correctly.
+
+\subsection{Mapping between Maildir and Git store}
+
+As a Maildir is simply files stored in directories and git is designed to store files in different versions, the mapping is mostly straightforward. A Gitmaildir follows exactly the same structure as a Maildir except that it does not have the \texttt{tmp} folder. The reason for this omission is that the \texttt{tmp} folder is used for concurrency protections when writing to the filesystem. However this is all managed by the gitmaildir client in use which makes it unnecessary to ever write to it. It is therefore unecessary to keep this folder.
+
+Originally there were plans to move metadata such as the flags added to the end of file names into the first line of email files so that the filenames in the git store did not change. The benefits of this strategy would have been that no semantically important data would be stored in git tree objects (as all that is stored there are file names which are unique identifiers and do not tell us important details about the data contained within). However, this adds complexity when adding to and reading from a Gitmaildir. It also would mean that changing a flag on an email changes the file hash, and so a new copy of the email is stored under the new hash. Git internally does use forms of diffing to compress the store contents so that this is not as much of an issue. However it does add complexity for no real gain which is why I decided that it was not a worthwhile feature.
+
+An additional feature that Git provides on top of the standard filesystem is branching. This is not used in the basic reperesentation of a Gitmaildir, however it is very useful for the extension features. Therefore it is reserved for these and will be described in later sections. 
 
 \subsection{Library}
 
-The Gitmaildir library provides the following features:
+As decided in the requirements analysis, the Gitmaildir library provides the following features:
 
 \begin{itemize}
 \item email delivery
 \item email move/rename (this includes altering flags)
 \item email deletion
 \item conversion of a maildir to a gitmaldir (and vice versa)
-\item TODO: mention extension if implemented
+\item the ability to add different hooks when a modification occurs so that extensions can be implemented more easily
 \end{itemize}
 
 All of these operations required iteraction between the filesystem and/or interaction with a git store. To manage interaction with a git store I used the library ocaml-git. As all this provided was the means to read and write different types of elements of a git store in a consistent way it was necessary to implement the functionality of some of the git plumbing commands almost from scratch.
 
+The library itself was separated into a few different sections depending on functionality. There is the \texttt{git\_ops} module which implements all the necessary git features on top of ocaml-git. This includes plumbing command features such as adding blobs to git trees and other features such as initialising a Gitmaildir. To implement these I had to follow how git builds commits to leave the store in a correct state. Here is an example of how a file is added to the store to show how this was done:
+
+TODO: write as pseudocode rather than a list
+\begin{enumerate}
+\item
+  First we must add the file to the store. This is handled by the ocaml-git library. We simply pass in the file data and are returned a hash of its contents which act as its address in the store.
+\item
+  We have to navigate to where the new file should be stored. We do this by reading in the current head commit to find what the hash is of the top level tree. Once we have this we read in the tree from this hash. Using the data returned we find the hash of the next level tree from its name. This process is repeated until we find the tree we want to insert the new file under.
+\item
+  We modify this tree to contain the new file by adding its hash and name. Then we write it back, getting a new hash. We then modify the parent tree in the same way and repeat all the way up to the top level tree.
+\item
+  Once we have the hash of the new top level tree we can create a new commit pointing to this hash as the top level tree.
+\item
+  Finally, we update the head reference with the hash of the new commit and now the top commit in the git store points to our newly update tree containing the new file.
+\end{enumerate}
+
+In effect this is a standard tree traversal where we walk down to the directory we want to update and then walk back up from that point rewriting all the nodes and pointers along the way. In fact, most operations on the git store involve traversing the tree to a point, making a change of some sort and then walking back up. This is quite useful for implementation as it means that the tree traversal only has to be written once. After writing this I was then able to add quite a few features such as rename, addition and deletion as different modifications. This was fairly straightforward because OCaml is a functional language. This means that it has first class functions so the necessary function can be passed as an argument to the method that implements the tree walking.
+
+While writing these methods it became obvious that a lot of things were harder to read and more verbose than they could be. This was because almost all of the operations interact with the filesystem so they were therefore wrapped in an Lwt monad. Also, these operations can almost all cause errors so they were then wrapped in a Result monad. This made the types quite complicated and so difficult to work with in a way that was both clear and not too verbose. To solve this I added a few helper functions in the form of extra infix operators. These were operators which allowed me to bind or map functions across both or either of the Result and Lwt parts of any value. Here is an example of code written before this change:
+
+\begin{minted}{ocaml}
+let init_empty_blob store =
+  let blob = Store.Value.Blob.of_string "" |> Store.Value.blob in
+  Result.map ~f:(Lwt.map (fun h ->
+                            Tree.of_list [Tree.entry ".keep" `Normal h]))
+                   write_value store blob
+  |> Result.map ~f:(Lwt.map Store.Value.tree)
+  |> Result.bind ~f:(Lwt.bind write_value store)
+  |> Result.bind ~f:(Lwt.bind commit_tree store [] "init")
+  |> Result.bind ~f:(Lwt.bind update_ref store Git.Reference.master)
+\end{minted}
+
+We can see above that there is a lot of repetition in this code. These structures are all almost identical and the nested ordering required means that the operation taking place is not immediately obvious. Below is the same code written with the infix operators:
+
+\begin{minted}{ocaml}
+let init_empty_blob store =
+  let blob = Store.Value.Blob.of_string "" |> Store.Value.blob in
+  write_value store blob
+  >>|| (fun h -> Tree.of_list [Tree.entry ".keep" `Normal h])
+  >>|| Store.Value.tree
+  >>== write_value store
+  >>== commit_tree store [] "init"
+  >>== update_ref store Git.Reference.master
+\end{minted}
+
+We can see that the nested application of two functions is now contained in one infix operator which also fits with the flow of the data through the code. Although this is just a small example these patters exist in almost every function in the codebase, meaning that it does have a large impact on efficiency when both reading and writing code.
+
+Once implementation of the necessary git operations was complete it was possible to move on to writing Maildir operations. These are all held in a separate module aptly named \texttt{maildir}. Most of the functionality was created by wrapping sequences of functions from \texttt{git\_ops} to provide standalone Maildir functions without having to worry about the Git backend. In fact this was my first use of an OCaml functor in the project. When one wishes to use the Maildir module they must first pass in a module which provides the necessary Git operations. This implementation is then used by the \textt{maildir} module to interact with a git store.
+
+The implementation of most operations such as deleting an email was fairly straightforward as they just consist of reading information about the store, performing the modification and then writing back any results\footnote{One extra feature that did need adding was locking but this is described later}. However, a few operations required some new thought. One such operation was email delivery as we have to assign a unique name to each new email. The format for this is specified in the man pages\cite{} as:
+\blockquote{time.pid.host, where time is the number of seconds since the beginning of 1970 GMT, pid is the program's process ID, and host is the host name}
+This works until one program tries to deliver two programs in too quick succession. While it is unlikely for this to happen it is still possible. As the original implementation of Maildir uses the filesystem the suggestion is to sleep 2 seconds and try again. Because of using Git the name collision check takes longer and so will take longer to throw an error. My current implementation throws an error if the name is taken and the process has to try again which is similar behaviour as the delivering process cannot check for the collision itself. However, due to the locking in use (described in more detail later), it would be possible to safely generate the name at the point of adding it to the git tree. This would be the best solution, but it would violate the layers of abstraction in my modules which is why I chose not to implement it.
+
+For the extensions, it was necessary to have the ability to perform extra operations when every action is taken on a Gitmaildir. I implemented this by wrapping every function in another that would be provided both the correct arguments and a list of extension functions in use. The extension functions are then passed the name of the operation called (in the form of a variant type) and the arguments given. This provides a lot of flexibility while not interfering with the core operations of the Gitmaildir library. This does mean that extensions must be compiled in as part of the library but they were never intended to be a feature that end users could write on the fly so I felt that this was not a problem.
+
 \subsection{Command line interface}
+
+TALK ABOUT CMDLINER
 
 \subsection{Daemon}
 

@@ -6,6 +6,7 @@
 \usepackage{verbatim}
 \usepackage{makecell}  % for overfull title table cell in proforma
 \usepackage{adjustbox} % for the proforma table (resizes to get rid of latex warnings)
+\usepackage{minted} % code highlighting
 \usepackage[backend=biber,style=numeric]{biblatex}
 \addbibresource{refs.bib}
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
@@ -69,7 +70,7 @@ The original aims of the project were to create a new type of maildir on top of 
 
 \section*{Work Completed}
 
-The core of the project built was a library, gitmaildir, which handles interaction with a gitmaildir. Then there are also two helper tools: gitmaildir\_cli a command-line interface for gitmaildirs and gitmaildir\_daemon, a daemon to sync a gitmaildir with a standard maildir. Also two extensions have been completed: branching based on reply threads and branching for preprocessing of mail for different devices. Of course as part of this it was necessary to design how a gitmaildir would work and write some code to create metrics for performance testing.
+The core of the project built was a library, gitmaildir, which handles interaction with a gitmaildir. Then there are also two helper tools: \texttt{gitmaildir\_cli} a command-line interface for gitmaildirs and \texttt{gitmaildir\_daemon}, a daemon to sync a gitmaildir with a standard maildir. Also two extensions have been completed: branching based on reply threads and branching for preprocessing of mail for different devices. Of course as part of this it was necessary to design how a gitmaildir would work and write some code to create metrics for performance testing.
 
 \section*{Special Difficulties}
 

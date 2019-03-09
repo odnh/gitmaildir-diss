@@ -8,19 +8,21 @@ The original plan specified that the project would consist of a git overlay for 
 
 \subsection{Requirements}
 
-Before starting the project, it was necessary to work out exactly which features needed to be implemented. This was done by performing a requirements analysis. TODO: add requirements analysis
+Before starting the project, it was necessary to work out exactly which features needed to be implemented. This was done by performing a rudimentary requirements analysis (a full requirements analysis was not needed as this project is intended as a proof of concept library as opposed to a product for end users). TODO: add requirements analysis
 
 \subsection{Plan modifications and clarifications}
 
 Given the above requirements, further to the initial plan it was decided that it would be useful for the library to also work on standard desktop computers. Therefore it was necessary to also implement a command-line tool to interact with a Gitmaildir. Furthermore, I realised that it would be very useful to have a daemon to synchronise a Gitmaildir with a standard Maildir so this was another feature not in the plan that was to be built in the implementation. Other than these small changes, the plan was otherwise unchanged.
 
+TODO: something about evaluation maybe??
+
 \section{OCaml}
 
-The language of choice for this project was OCaml \cite{MinskyYaron2013RwO}. This is due to it being the language that MirageOS is implemented in and so there were preexisting libraries that were useful for implementing part of the project. OCaml is a primarily functional programming language which also supports imperative and object-oriented programming styles. It also is a member of the ML language family, meaning that it has Hindley-Milner type system.
+The language of choice for this project was OCaml\cite{code_ocaml}. This is due to it being the language that MirageOS is implemented in and so there were preexisting libraries that were useful for implementing part of the project. OCaml is a primarily functional programming language which also supports imperative and object-oriented programming styles. It also is a member of the ML language family, meaning that it has Hindley-Milner type system.
 
 \subsection{Functional programming}
 
-Although it is possible to use OCaml in an imperative manner, it is not so natural in the language's syntax and all of the libraries that I am using are also written in a functional style so it seemed sensible to continue this into the implementation of Gitmaildir itself.
+Although it is possible to use OCaml in an imperative manner, it is not so natural in the language's syntax and all of the libraries that I am using are also written in a functional style. Also, many of the benefits of using OCaml come from being able to program declaratively in a functional style, so it seemed sensible to continue this into the implementation of Gitmaildir itself.
 
 \subsection{Functors}
 
@@ -28,49 +30,31 @@ An important aspect of OCaml is its module system. At the most basic level, they
 
 \subsection{Monads}
 
-Monads are a design pattern in functional programming languages which allow us to operate on values in a standard manner whilst abstracting away from the specifics of the particular operation. For something to be a monad, it must provide three things (examples given in the syntax of OCaml):
+Monads are a design pattern in functional programming languages which allow us to operate on values in a standard manner whilst abstracting away from the specifics of the particular operation. For something to be a monad, it must have three parts: a type constructor which places some type in a conceptual box, a function called \texttt{unit} which places an object in a box, and a function called \texttt{bind} which applies a function to an element in a box and returns a boxed result. There are also some laws that these functions must satisfy which along with further description are described by Wadler in his original paper\cite{wadler90monads}.
 
-\begin{itemize}
-\item A type constructor which builds a monadic type from a given type. \\
-      For example \texttt{type 'a t}
-\item A type converter which places a type in a monadic type (sometimes called return). \\
-      For example \texttt{return : 'a -> 'a t}
-\item A combinator which applies a function to an unwrapped monadic value and then returns its result wrapped in a monad (often called bind). \\
-      For example \texttt{val (>>=) : 'a t -> ('a -> 'b t) -> 'b t}
-\end{itemize}
+Monads can have multiple uses. For example in Haskell they are used for everything that causes side effects such as io operations. In OCaml they are not a built-in part of the language but that does not mean they do not get used. A library used heavily in my project is Lwt\cite{code_lwt} which provides promises in the form of a concurrency monad. This allows us to string together a list of operations that we would like to execute at some point. These lists can then be passed around our program and executed at a later point. This is useful as it gives us quite precise control over when things happen. It was a necessary part of interacting with ocaml-git to use this but is of further use as it allows building up operations to be later executed concurrently\footnote{This is not quite true as OCaml is still inherently single-threaded, but will soon have multicore support with ocaml-multicore\cite{dolan2014multicore}}.
 
-Along with these three elements, a monad must obey three laws:
-
-\begin{itemize}
-\item return is a left-identity for bind: \\
-      \texttt{return x >>= f} \texttt{f x}
-\item return is a right-identity for bind: \\
-      \texttt{m >>= return} \texttt{m}
-\item bind is associative: \\
-      \texttt{(m >>= f) >>= g} \texttt{m >>= (fun x -> f x >>= g)}
-\end{itemize}
-
-Monads can have multiple uses. For example in Haskell they are used for everything that causes side effects such as io operations. In OCaml they are not a built-in part of the language but that does not mean they do not get used. A library used heavily in my project is lwt \cite{lwt_library} which provides promises in the form of a concurrency monad. It was a necessary part of interacting with ocaml-git but also is of further use as it allows building up operations to be later executed concurrently \footnote{This is not quite true as OCaml is still inherently single-threaded, but will soon have multicore support with ocaml-multicore \cite{ocaml-multicore}}.
+Beyond Lwt monads are a useful way to handle exceptions. Rather than having a structure built around throwing and catching exceptions we can instead leverage a monad often called the maybe monad, also introduced by Wadler\cite{wadler90monads}. This works by having a return type which is a union of an actual result and an error. Then, if an error is passed into a function as part of a \texttt{bind} operation, we just bypass that function and return the error. In this way, we can easily combine lots of operations that could error and only have to deal with something going wrong in one location, at the end of the chain. I planned to use this extensively in my programming.
 
 \section{Git}
 
-Git is a well know, widely used distributed version-control system. Its main and original use was for programmers to use as a version-control system for their software. It is implemented on top of a Content-Addressable Storage system, and provides the primitives needed for version control as commands that act on this. As it provides version control it can be used to implement strong consistency which is why I chose to use it for the project. Therefore it was important to understand the internals so that I could interface with it correctly.
+Git\cite{code_git} is a well-know, widely used distributed version-control system. Its main and original use was for programmers to use as a version-control system for their software\cite{TODO}. It is implemented on top of a Content-Addressable Storage system, and provides the primitives needed for version control as commands that act on this. As it provides version control it can be used to implement strong consistency which is why I chose to use it for the project. Therefore it was important to understand the internals so that I could interface with it correctly.
 
 \subsection{Content-Addressable Storage}
 
-A content-addressable storage system is, exactly as the name describes, a storage system where each object is addressed by its content in some way. This is different to most storage systems which tend to be location-addressed where the index need-not have any relation to the data it points to (ie we can name a file anything regardless of its content). This is implemented in git using hash functions. It works, by storing data on the filesystem as standard, except the file name is always a hash of the contents of the file itself. The reason this is used is then the entire version control can just be implemented as a form of hash chain, and because the file names derive from their contents we can always be sure that a file is the correct historic copy because a small change in its contents will cause a large change in its name. 
+A content-addressable storage system is, exactly as the name describes, a storage system where each object is addressed by its content. This is different to most storage systems which tend to be location-addressed where the index need-not have any relation to the data it points to (ie we can name a file anything regardless of its content). This is implemented in git using hash functions. It works by storing data on top of a standard filesystem except that the file name is always a hash of the contents of the file itself. The reason this is used is then the entire version control can just be implemented as a form of hash chain. We can always be sure that a file is the correct historic copy because the file name derives directly from its contents and a small change in its contents will generally cause a large change in its name (due to the definition of the hash function). 
 
 \subsection{Porcelain and Plumbing}
 
-Git has two sets of command-line tools: its ``porcelain'' tools and its ``plumbing'' tools. The important difference is that the porcelain tools are the ones that users of the version control system should use for all normal operations, but the plumbing tools are lower level and allow direct interaction with the git store. As I am using the git store in slightly non-standard ways, it was important to learn the plumbing commands so that I can use the full power of the git storage system while simultaneously leaving the git store in a valid state after each operation.
+Git has two sets of command-line tools: its ``porcelain'' tools and its ``plumbing'' tools. The important difference is that the porcelain tools are the ones that users of the version control system should use for all normal operations, but the plumbing tools are lower level and allow direct interaction with the git store. As I am using the git store in slightly non-standard ways, it was important to learn the plumbing commands so that I can use the full power of the git storage system while simultaneously leaving the git store in a valid state after each operation. A further description of the differences can be found in the Git book\cite{chacon2014git}.
 
 \section{ocaml-git}
 
-Ocaml-git \cite{ocaml-git} is a library that the project relies on heavily. It is a complete reimplementation of the git specification in OCaml, meaning that it relies on none of the original git code-base. This is very useful as it provides immediate interoperability with my code rather than having to write wrappers for shell scripts whenever I wish to interact with the git store. However, it is much lower level in terms of what it offers than the git command-line interface. It offers types and modules that allow reading, writing and modifying any type of git object in a git store. It also offers some interaction with the index. However, it does not add any more which means that any features of the git porcelain commands must be reimplemented if I wish to use them and even quite a few of the operations that plumbing commands offer. As a means of interacting with git stores without having to worry about their layout on disk so that I can focus on functionality it will be indispensable.
+One library that my project relied heavily on is ocaml-git\cite{code_ocaml-git}. It is a complete reimplementation of the git specification in OCaml, meaning that it relies on none of the original git code-base. This is very useful as it provides immediate interoperability with my code rather than having to write wrappers for shell scripts whenever I wish to interact with a git store. However, it is much lower level in terms of what it offers than the git command-line interface. It offers types and modules that allow reading, writing and modifying any type of git object in a git store. It also offers some interaction with the index. However, it does not add any other features which means that any features of the git porcelain commands must be reimplemented if I wish to use them and even quite a few of the operations that plumbing commands offer. I planned to use it as a means of interacting with git stores without having to worry about their layout on disk so that I can focus more on functionality.
 
 \section{Maildir}
 
-As I had chosen Maildir as the kind of mail storage I was going to model, it was important to find out its exact specification in terms of structure and interaction. Maildirs are in fact incredibly simple. Each email is stored as a separate file with a unique name. These emails are store in one of three directories:
+As I had chosen Maildir as the kind of mail storage I was going to model, it was important to find out its exact specification in terms of structure and interaction. Maildirs are in fact incredibly simple. Each email is stored as a separate file with a unique name. These emails are then stored in one of three directories:
 
 \begin{itemize}
 \item \texttt{tmp}: Emails are stored here while being delivered
@@ -78,4 +62,4 @@ As I had chosen Maildir as the kind of mail storage I was going to model, it was
 \item \texttt{cur}: All other emails are stored here
 \end{itemize}
 
-Also, flags can be added to the end of email filenames to provide extra metadata such as if an email has been flagged. There are also many extensions to the standard providing extra features such as notation for separate email directories. Furthermore, there are specific rules about the structure of the names and how the randomness should be generated for them to provide enough safety from name collisions. Also there are rules about how exactly an email should be delivered to the directory to be safer in concurrent situations. All these had to be taken into account for the implementation, but given the new storage structure, so of the rules proved irrelevant and some other changes did have to be made.
+Also, flags can be added to the end of email filenames to provide extra metadata such as if an email has been flagged. There are many extensions to the standard providing extra features such as notation for separate email directories. Furthermore, there are specific rules about the structure of the names and how the randomness should be generated for them to provide enough safety from name collisions. Also, there are rules about how exactly an email should be delivered to the directory to be safer in concurrent situations. The exact specifications can all be found in the original document written by its creator\cite{bernstein2000maildir}. All of these features had to be taken into account for the implementation, but given the new storage structure, some of the rules proved irrelevant and some other changes did have to be made.
