@@ -31,7 +31,7 @@ Originally there were plans to move metadata such as the flags added to the end 
 
 An additional feature that Git provides on top of the standard filesystem is branching. This is not used in the basic reperesentation of a Gitmaildir, however it is very useful for the extension features. Therefore it is reserved for these and will be described in later sections. 
 
-\subsection{Library}
+\subsection{The Gitmaildir Library}
 
 As decided in the requirements analysis, the Gitmaildir library provides the following features:
 
@@ -90,7 +90,7 @@ let init_empty_blob store =
   >>== update_ref store Git.Reference.master
 \end{minted}
 
-We can see that the nested application of two functions is now contained in one infix operator which also fits with the flow of the data through the code. Although this is just a small example these patters exist in almost every function in the codebase, meaning that it does have a large impact on efficiency when both reading and writing code.
+We can see that the nested application of two functions is now contained in one infix operator which also fits with the flow of the data through the code. Although this is just a small example these patterns exist in almost every function in the codebase, meaning that it does have a large impact on efficiency when both reading and writing code.
 
 Once implementation of the necessary git operations was complete it was possible to move on to writing Maildir operations. These are all held in a separate module aptly named \texttt{maildir}. Most of the functionality was created by wrapping sequences of functions from \texttt{git\_ops} to provide standalone Maildir functions without having to worry about the Git backend. In fact this was my first use of an OCaml functor in the project. When one wishes to use the Maildir module they must first pass in a module which provides the necessary Git operations. This implementation is then used by the \texttt{maildir} module to interact with a git store.
 
@@ -105,6 +105,7 @@ For the extensions, it was necessary to have the ability to perform extra operat
 \subsection{Command line interface}
 
 TALK ABOUT CMDLINER
+
 
 \subsection{Daemon}
 
