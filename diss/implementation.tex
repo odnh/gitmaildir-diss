@@ -29,7 +29,7 @@ As a Maildir is simply files stored in directories and git is designed to store 
 
 Originally there were plans to move metadata such as the flags added to the end of file names into the first line of email files so that the filenames in the git store did not change. The benefits of this strategy would have been that no semantically important data would be stored in git tree objects (as all that is stored there are file names which are unique identifiers and do not tell us important details about the data contained within). However, this adds complexity when adding to and reading from a Gitmaildir. It also would mean that changing a flag on an email changes the file hash, and so a new copy of the email is stored under the new hash. Git internally does use forms of diffing to compress the store contents so that this is not as much of an issue. However it does add complexity for no real gain which is why I decided that it was not a worthwhile feature.
 
-An additional feature that Git provides on top of the standard filesystem is branching. This is not used in the basic reperesentation of a Gitmaildir, however it is very useful for the extension features. Therefore it is reserved for these and will be described in later sections. 
+An additional feature that Git provides on top of the standard filesystem is branching. This is not used in the basic reperesentation of a Gitmaildir, however it is very useful for the extension features. Therefore it is reserved for these and will be described later in section \ref{section:extensions} 
 
 \subsection{The Gitmaildir Library}
 
@@ -43,28 +43,60 @@ As decided in the requirements analysis, the Gitmaildir library provides the fol
 \item the ability to add different hooks when a modification occurs so that extensions can be implemented more easily
 \end{itemize}
 
-All of these operations required iteraction between the filesystem and/or interaction with a git store. To manage interaction with a git store I used the library ocaml-git. As all this provided was the means to read and write different types of elements of a git store in a consistent way it was necessary to implement the functionality of some of the git plumbing commands almost from scratch.
+All of these operations required interaction between the filesystem and/or interaction with a git store. To manage interaction with a git store I used the library ocaml-git. As all this provided was the means to read and write different types of elements of a git store in a consistent way it was necessary to implement the functionality of some of the git plumbing commands almost from scratch.
 
-The library itself was separated into a few different sections depending on functionality. There is the \texttt{git\_ops} module which implements all the necessary git features on top of ocaml-git. This includes plumbing command features such as adding blobs to git trees and other features such as initialising a Gitmaildir. To implement these I had to follow how git builds commits to leave the store in a correct state. Here is an example of how a file is added to the store to show how this was done:
+The library itself was separated into a few different sections depending on functionality. There is the \texttt{git\_ops} module which implements all the necessary git features on top of ocaml-git. This includes plumbing command features such as adding blobs to git trees and other features such as initialising a Gitmaildir. To implement these I had to follow how git builds commits to leave the store in a correct state. Algorithm \ref{algorithm:addtostore} shows the method used to add a new blob (ie file) to a git store at a particular location in the tree.
 
-TODO: write as pseudocode rather than a list
-\begin{enumerate}
-\item
-  First we must add the file to the store. This is handled by the ocaml-git library. We simply pass in the file data and are returned a hash of its contents which act as its address in the store.
-\item
-  We have to navigate to where the new file should be stored. We do this by reading in the current head commit to find what the hash is of the top level tree. Once we have this we read in the tree from this hash. Using the data returned we find the hash of the next level tree from its name. This process is repeated until we find the tree we want to insert the new file under.
-\item
-  We modify this tree to contain the new file by adding its hash and name. Then we write it back, getting a new hash. We then modify the parent tree in the same way and repeat all the way up to the top level tree.
-\item
-  Once we have the hash of the new top level tree we can create a new commit pointing to this hash as the top level tree.
-\item
-  Finally, we update the head reference with the hash of the new commit and now the top commit in the git store points to our newly update tree containing the new file.
-\end{enumerate}
+\begin{algorithm}[h]
+\SetAlgoLined
+\DontPrintSemicolon
+
+\KwData{$D=$ data to write to store, $P=$ path as a list}
+\KwResult{Store is updated with head pointing to the new tree}
+
+\SetKwFunction{FMain}{AddToTree}
+\SetKwProg{Fn}{Function}{:}{}
+
+\BlankLine
+\tcc{First we write the data to the store}
+$ dataHash \leftarrow \textrm{WriteBlob}(D) $\;
+
+\BlankLine
+\tcc{Then we define the function to update the tree}
+\SetKwFunction{FMain}{AddToTree}
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\FMain{$H$, $L$, $T$}}{
+  \eIf{$L = [\,]$}
+  {$ tree \leftarrow \textrm{ReadTree}(T) $\;
+   $ newTree \leftarrow \textrm{AddElementInTree}(tree, dataHash) $\;
+   $ treeHash \leftarrow \textrm{WriteTree}(newTree) $\;
+   $ \textbf{return } treeHash $}
+  {$ \mathit{head, tail} \leftarrow L $\;
+   $ tree \leftarrow \textrm{ReadTree}(T) $\;
+   $ subtree \leftarrow \textrm{EntryFromTree}(tree, head) $\;
+   \tcc{The recursive call is here}
+   $ newSubtreeHash \leftarrow \textrm{AddToTree}(H, tail, subtree) $\;
+   $ updatedTree \leftarrow \textrm{ReplaceInTree}(tree, head, newSubtreeHash) $\;
+   $ treeHash \leftarrow \textrm{WriteTree}(updatedTree) $\;
+   $ \textbf{return } treeHash $\;}
+}
+\textbf{end}
+
+\BlankLine
+\tcc{Now we update the tree and write the new commit}
+$ newTreeHash \leftarrow \textrm{AddToTree}(dataHash, P, oldTree) $\;
+$ newCommit \leftarrow \textrm{BuildCommit}(newTreeHash, oldCommit) $\;
+$ \textrm{UpdateHeadReference}(newCommit) $\;
+\caption{How to add data to a Git store}
+\label{algorithm:addtostore}
+\end{algorithm}
+\medskip
 
 In effect this is a standard tree traversal where we walk down to the directory we want to update and then walk back up from that point rewriting all the nodes and pointers along the way. In fact, most operations on the git store involve traversing the tree to a point, making a change of some sort and then walking back up. This is quite useful for implementation as it means that the tree traversal only has to be written once. After writing this I was then able to add quite a few features such as rename, addition and deletion as different modifications. This was fairly straightforward because OCaml is a functional language. This means that it has first class functions so the necessary function can be passed as an argument to the method that implements the tree walking.
 
-While writing these methods it became obvious that a lot of things were harder to read and more verbose than they could be. This was because almost all of the operations interact with the filesystem so they were therefore wrapped in an Lwt monad. Also, these operations can almost all cause errors so they were then wrapped in a Result monad. This made the types quite complicated and so difficult to work with in a way that was both clear and not too verbose. To solve this I added a few helper functions in the form of extra infix operators. These were operators which allowed me to bind or map functions across both or either of the Result and Lwt parts of any value. Here is an example of code written before this change:
+While writing these methods it became obvious that a lot of things were harder to read and more verbose than they could be. This was because almost all of the operations interact with the filesystem so they were therefore wrapped in an Lwt monad. Also, these operations can almost all cause errors so they were then wrapped in a Result monad. This made the types quite complicated and so difficult to work with in a way that was both clear and concise. To solve this I added a few helper functions in the form of extra infix operators. These were operators which allowed me to bind or map functions across both or either of the Result and Lwt parts of any value. An example of code written before using these infix operators can be seen in Listing \ref{listing:noinfix}.
 
+\begin{listing}[h]
 \begin{minted}{ocaml}
 let init_empty_blob store =
   let blob = Store.Value.Blob.of_string "" |> Store.Value.blob in
@@ -76,9 +108,13 @@ let init_empty_blob store =
   |> Result.bind ~f:(Lwt.bind commit_tree store [] "init")
   |> Result.bind ~f:(Lwt.bind update_ref store Git.Reference.master)
 \end{minted}
+\caption{Code segment before the use of new infix operators}
+\label{listing:noinfix}
+\end{listing}
 
-We can see above that there is a lot of repetition in this code. These structures are all almost identical and the nested ordering required means that the operation taking place is not immediately obvious. Below is the same code written with the infix operators:
+We can see in Listing \ref{listing:noinfix} that there is a lot of repetition in this code. The structures of each line are all almost identical and the nested ordering required means that the operation taking place is not immediately obvious. Therefore, I rewrote the same code using the new infix operators that I had defined.
 
+\begin{listing}[h]
 \begin{minted}{ocaml}
 let init_empty_blob store =
   let blob = Store.Value.Blob.of_string "" |> Store.Value.blob in
@@ -89,16 +125,19 @@ let init_empty_blob store =
   >>== commit_tree store [] "init"
   >>== update_ref store Git.Reference.master
 \end{minted}
+\caption{Code segment with the use of new infix operators}
+\label{listing:infix}
+\end{listing}
 
-We can see that the nested application of two functions is now contained in one infix operator which also fits with the flow of the data through the code. Although this is just a small example these patterns exist in almost every function in the codebase, meaning that it does have a large impact on efficiency when both reading and writing code.
+We can see in Listing \ref{listing:infix} the nested application of two functions is now contained in one infix operator which also fits visually with the flow of the data through the code. Because of these two factors the code became quicker to write and it also felt more natural to read. Although this is just a small example, these patterns exist in almost every function in the codebase, meaning that it does have a large impact on efficiency when both reading and writing code throughout the project.
 
-Once implementation of the necessary git operations was complete it was possible to move on to writing Maildir operations. These are all held in a separate module aptly named \texttt{maildir}. Most of the functionality was created by wrapping sequences of functions from \texttt{git\_ops} to provide standalone Maildir functions without having to worry about the Git backend. In fact this was my first use of an OCaml functor in the project. When one wishes to use the Maildir module they must first pass in a module which provides the necessary Git operations. This implementation is then used by the \texttt{maildir} module to interact with a git store.
+Once implementation of the necessary git operations was complete it was possible to move on to writing Maildir operations. These are all held in a separate module aptly named \texttt{maildir}. Most of the functionality was created by wrapping sequences of functions from \texttt{git\_ops} to provide standalone Maildir functions without having to worry about the Git backend. In fact this was one of the many uses of an OCaml functor in my project. When one wishes to use the Maildir module they must first pass in a module which provides the necessary Git operations. This implementation is then used by the \texttt{maildir} module to interact with a git store.
 
-The implementation of most operations such as deleting an email was fairly straightforward as they just consist of reading information about the store, performing the modification and then writing back any results\footnote{One extra feature that did need adding was locking but this is described later}. However, a few operations required some new thought. One such operation was email delivery as we have to assign a unique name to each new email. The format for this is specified by the original author\cite{bernstein2000maildir} as:
+The implementation of most operations such as deleting an email was fairly straightforward as they just consist of reading information about the store, performing the modification and then writing back any results\footnote{One extra feature that did need adding to this flow was locking but this is described later in section \ref{section:concurrency}}. However, a few operations required some new thought. One such operation was email delivery as we have to assign a unique name to each new email. The format for this is specified by the original author\cite{bernstein2000maildir} as:
 \begin{quote}
   Okay, so you're writing messages. A unique name has three pieces, separated by dots. On the left is the result of time() or the second counter from gettimeofday(). On the right is the result of gethostname(). (To deal with invalid host names, replace / with \textbackslash057 and : with \textbackslash072.) In the middle is a delivery identifier, discussed below.
 \end{quote}
-This works under most circumstances but it is still possible to end up with two identical names. Therefore we need a solution for collisions. As the original implementation of Maildir uses the filesystem the suggestion is to sleep 2 seconds and try again. Because of using Git the name collision check takes longer and so will take longer to throw an error. My current implementation throws an error if the name is taken and the process has to try again which is similar behaviour as the delivering process cannot check for the collision itself. However, due to the locking in use (described in more detail later), it would be possible to safely generate the name at the point of adding it to the git tree. This would be the best solution, but it would violate the layers of abstraction in my modules which is why I chose not to implement it.
+This works under most circumstances but it is still possible to end up with two identical names. Therefore we need a solution for collisions. As the original implementation of Maildir uses the filesystem the suggestion is to sleep 2 seconds and try again. Because of using Git the name collision check takes longer and so will take also longer to throw an error. My current implementation throws an error if the name is taken and the process has to try again. I think this is similar behaviour to the original, as in this case the delivering process cannot check for itself if the name collides. However, due to the locking in use (described in more detail in section \ref{section:concurrency}), it would be possible to safely generate the name at the point of adding it to the git tree whilst also not having to worry about collisions. This would be the best solution in terms of speed, but it would violate the layers of abstraction in my modules which is why I chose not to implement it.
 
 For the extensions, it was necessary to have the ability to perform extra operations when every action is taken on a Gitmaildir. I implemented this by wrapping every function in another that would be provided both the correct arguments and a list of extension functions in use. The extension functions are then passed the name of the operation called (in the form of a variant type) and the arguments given. This provides a lot of flexibility while not interfering with the core operations of the Gitmaildir library. This does mean that extensions must be compiled in as part of the library but they were never intended to be a feature that end users could write on the fly so I felt that this was not a problem.
 
@@ -109,10 +148,10 @@ TALK ABOUT CMDLINER
 
 \subsection{Daemon}
 
-\subsection{Concurrency protections}
+\subsection{Concurrency protections} \label{section:concurrency}
 
 \subsection{Build system}
 
-\section{Extensions}
+\section{Extensions} \label{section:extensions}
 
 \section{Repository overview}
