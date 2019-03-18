@@ -8,13 +8,23 @@ The original plan specified that the project would consist of a git overlay for 
 
 \subsection{Requirements}
 
-Before starting the project, it was necessary to work out exactly which features needed to be implemented. This was done by performing a rudimentary requirements analysis (a full requirements analysis was not needed as this project is intended as a proof of concept library as opposed to a product for end users). TODO: add requirements analysis
+Before starting the project, it was necessary to work out exactly which features needed to be implemented. This was done by performing a requirements analysis. I started by finding out what different operations a maildir can support. From reading (TODO:Insert article)\cite{TODO} I found these to be:
+
+\begin{itemize}
+  \item Email delivery
+  \item Email retrieval (for reading)
+  \item Email metadata modification (through changing flags)
+  \item Email deletion.
+  \item Reading an index of all stored email
+\end{itemize}
+
+As my success criteria specified that my project should support all standard maildir operations, I made all of these operations required features of the final application. I also decided that there were some more features that would be useful to have which are described in the next section.
 
 \subsection{Plan modifications and clarifications}
 
-Given the above requirements, further to the initial plan it was decided that it would be useful for the library to also work on standard desktop computers. Therefore it was necessary to also implement a command-line tool to interact with a Gitmaildir. Furthermore, I realised that it would be very useful to have a daemon to synchronise a Gitmaildir with a standard Maildir so this was another feature not in the plan that was to be built in the implementation. Other than these small changes, the plan was otherwise unchanged.
+Given the above requirements, further to the initial plan it was decided that it would be useful for the library to also work on a standard Unix-based operating system such as Linux, BSD and macOS. Therefore it was necessary to also implement a command-line tool to interact with a Gitmaildir. Furthermore, I realised that it would be very useful to have a daemon to synchronise a Gitmaildir with a standard Maildir so this was another feature not in the plan that was to be built in the implementation. Other than these small changes, the plan was otherwise unchanged.
 
-TODO: something about evaluation maybe??
+I also decided that alongside the success criteria it would be useful to evaluate the performance of a Gitmaildir against those of an Mbox and Maildir as this is an important metric related to whether it is actually a useable alternative. It is not enough that it works correctly if it is still too slow to compete with these widely-used standards.
 
 \section{OCaml}
 

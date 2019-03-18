@@ -1,15 +1,85 @@
 \chapter{Evaluation}
 
+In this chapter I will discuss how I discuss whether the project has successfully met its original objectives. I will start by describing how I designed and performed the tests. Then I will show and discuss the results of the tests before finally assessing this results in the contexts of my success criteria.
+
 \section{Tests}
+
+In this section I explain how the tests were chosen and how they were implemented.
 
 \subsection{Elements of performance under test}
 
-\subsection{Metrics}
+As this project provides a new type of mailbox with specific functionality, I decided that it would be necessary to show all of these features worked as expected and in all situations. The way that I decided to do this was in the form of unit tests. Unit tests were chosen as they can test each part of the application separately in quite a granular manner. They also allow for easy testing of all the edge cases which are the most likely area for functional mistakes. The results of this testing are discussed in Section \ref{section:functionality_tests}.
 
-\section{Test suite}
+In devising this project, its motivation took into account many aspects of Maildir and Mbox and I have described Gitmaildir somewhat as a trade-off between these two approaches but with extra features. Therefore I felt that I should measure the performance of my application and compare it to the performance of Maildir and Mbox. I decided to test all of the main functionality that I had written as a part of Gitmaildir for full coverage of testing. This consists of mail delivery, mail metadata modification/relocation, and mail retrieval. In the next section I will discuss how this was performed.
 
-\section{Success critera}
+\subsection{Metrics and test implementation}
+
+The main trade-off between Mbox and Maildir is one of concurrency and locking. Therefore I decided, for a fair comparison that took this into account, to perform tests at a level of high concurrency and no concurrency, but for each test to also run it at different levels of concurrency to see how each different method was impacted by differing levels of concurrency. To make sure that the data would allow for a fair comparison over different runs I created a dataset by randomly generating a set of 1000 emails of size 75kB. The size 75kB was chosen as it is estimated to be the average size of an email\cite{email_size}. I then used the same dataset for all of the testing. The tests themselves were split into two main types and defined as:
+
+\begin{itemize}
+\item Time to perform action:
+  Here I timed how long it took to perform an action on different numbers of emails from the dataset in intervals of 100 all the way up to the total of 1000.
+\item Impact of concurrency on an action:
+  Here I timed how long it took to perform an action on all 1000 emails at different levels of concurrency (1 thread up to 10 threads).
+\end{itemize}
+
+As stated earlier, the actions for which these tests would be performed were:
+
+\begin{itemize}
+\item Mail delivery
+\item Mail metadata modification
+\item Mail retrieval
+\end{itemize}
+
+So that I would be able to test timing of Maildir and Mbox, I wrote two simple clients and libraries that implemented the same features as Gitmaildir and provided the same API in OCaml so that I could be sure that I was testing them all in the same way.
+
+To perform the concurrency tests, I was originally using xargs to provide the concurrency because it is not built into OCaml. However this led to a few problems as xargs was scheduling the different runs in ways that led to some strange and unexpected results. It had the further problem that because it was having to spin up a separate process for each action and the individual  processes are short-lived for a one-off action a lot of extra work was being done which interfered with the timing of the functionality itself.
+Therefore I reimplemented the tests in OCaml but using the Unix syscall fork to provide the necessary concurrency this meant that all the grouped actions would be performed in a single process and I had much more control over where to place the code that actually performed the timing.
+
+\section{Functionality tests}
+
+Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repositiory. This means that as long as the tests themselves did not miss out any corner cases then Gitmaildir provides all the functionality intended and that this functionality works correctly. It is of course still possible that the code contains residual bugs not found by these tests. However, we cannot provide any better guarantees without a formal proof that the code is correct which is beyond the scope of this project.
+
+TODO: input functionality test data
+
+\section{Performance tests}
+
+TODO: input performance test data
+
+\section{Success criteria}
+
+In this section I compare the final application and library to the original success criteria.
 
 \subsection{Successful functionality}
 
+The first success criterion stated that the project would be evaluated against:
+
+\begin{quote}
+  Implementation of a working git overlay on top of the filesystem in MirageOS.
+\end{quote}
+
+This was provided by the operations that I built on top of the ocaml-git library allowing a mixture of git plumbing commands and git porcelain commands to be executed in OCaml. The unit tests prove that the functionality works. As ocaml-git works on MirageOS (it was written as part of the MirageOS project) then a library that uses it as the backend will also work on MirageOS so the second part of the criterion is satisfied. This has been checked on MirageOS by writing a simple application that commits a file to a git store using my library and it worked successfully. As the rest of ocaml-git works on MirageOS and my library passes all the unit tests, it can be inferred that my git overlay will work on top of the filesystem in MirageOS.
+
+Therefore, the first of my two success criteria has been met.
+
 \subsection{Strong consistency}
+
+The second success criterion stated that the project would be evaluated against:
+
+\begin{quote}
+  A strongly consistent maildir index using the git overlay which allows all standard maildir operations.
+\end{quote}
+
+I will start by addressing the first half of this criterion. It requires that the application provides a strongly consistent overlay on top of maildir. As described before, the application records each operation as a separate git commit in a single local git repository. Strongly consistent can be defined as:
+\begin{quote}
+  All accesses are seen by all parallel processes (or nodes, processors, etc.) in the same order (sequentially). (This is from wikipedia and doesn't cite any sources. TODO: find actual source to cite)
+\end{quote}
+Because each operation is stored in a separate commit and we have a single main branch, that means that we have a single ordering of all operations which is seen by all users of the Gitmaildir. This means that we have a total ordering of all actions and so they are seen by all parallel processes in the same order, matching our definition above.
+
+The second half of this criterion specifies the application must allow all standard maildir operations. I have taken this to mean the ones I defined in my requirements analysis. So I have also met this part of the criterion. However, as the Gitmaildir is a standard maildir structure in a git repository, any other features that do not require non-standard extensions can be easily added by manipulating the maildir like a git standard git repository.
+
+Therefore, the second of my success criteria has been met and so both of my success critera have been met meaning that my project has successfully achieved its original aims.
+
+\section{Extensions}
+
+TODO: Add once extensions are complete
