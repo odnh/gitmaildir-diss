@@ -1,1 +1,14 @@
 \chapter{Conclusions}
+
+In this porject I sought to implement a new form of mailbox, based on Maildir but using a Git overlay. This was motivated by the need for a system that was strongly consistent but still benefited from many of the improvements that Maildir made over Mbox. It was to be written in OCaml using MirageOS libraries. 
+
+A library was written to perform all the necessary operations such as email delivery, retrieval and metadata modification. Then I extended this by building a unix client and a daemon to syncronise a standard Maildir with a Gitmaildir. I also added the ability to use extensions such as ... which did ... (TODO: talk about extensions).
+
+Then I evaluated my project by testing if all of the features worked as expected and specified. I also tested its performance, making comparisons with Maildir and Mbox as they were crucial to the motivation of the project. From these comparisions I learnt that Gitmaildir is slower than both of these schemes on average. However, it does outperform Mbox on some types of operations. These findings matched my original hopes and assumptions.
+
+Overall, my project met the success criteria as specified in the proposal and I was able to implement N (TODO: when extensions complete) extensions on top of this.
+
+\section{Further work}
+
+As further extensions it would be useful to implement Gitmaildir as a part of an MTA (mail transfer agent) and MUA (mail user agent) as these would allow it to perform in a real environment. As it is and OCaml library, it would be easier to do this with and MTA and MUA written in OCaml. I also think that changing the way of adding extensions to be architected more as a plugin system allowing users greater control would be interesting as it would allow more use of the fact that it runs on git. Finally more profiling should be done to see if the bottlenecks could be improved further and I belive a further exploration of different methods of formatting the maildir in the git store could be fruitful in aiding performance and features further.
+

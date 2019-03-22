@@ -1,6 +1,6 @@
 \chapter{Preparation}
 
-In this chapter I introduce the changes that I made to my original plan and the more detailed requirements that I decided my implementation should fulfill along with the reasons for doing so. Furthermore, I introduce the elements and workings of Git that were needed to be taken into account as part of the design and the intricacies of programming in OCaml that influenced the structure of the project in a different way to how it may have been written using an imperative or object oriented programming language such as C or Java.
+In this chapter I introduce the changes that I made to my original plan and the more detailed requirements that I decided my implementation should fulfill along with the reasons for doing so. Then I introduce the starting point of my project. Furthermore, I introduce the elements and workings of Git that were needed to be taken into account as part of the design and the intricacies of programming in OCaml that influenced the structure of the project in a different way to how it may have been written using an imperative or object oriented programming language such as C or Java.
 
 \section{Plan Refinement}
 
@@ -24,7 +24,15 @@ As my success criteria specified that my project should support all standard mai
 
 Given the above requirements, further to the initial plan it was decided that it would be useful for the library to also work on a standard Unix-based operating system such as Linux, BSD and macOS. Therefore it was necessary to also implement a command-line tool to interact with a Gitmaildir. Furthermore, I realised that it would be very useful to have a daemon to synchronise a Gitmaildir with a standard Maildir so this was another feature not in the plan that was to be built in the implementation. Other than these small changes, the plan was otherwise unchanged.
 
-I also decided that alongside the success criteria it would be useful to evaluate the performance of a Gitmaildir against those of an Mbox and Maildir as this is an important metric related to whether it is actually a useable alternative. It is not enough that it works correctly if it is still too slow to compete with these widely-used standards.
+I also decided that alongside the success criteria it would be useful to evaluate the performance of a Gitmaildir against those of an Mbox and Maildir as this is an important metric related to whether it is actually a usable alternative. It is not enough that it works correctly if it is still too slow to compete with these widely-used standards.
+
+\section{Starting point}
+
+Before starting this project I had a rudimentary knowledge of Git as a version control system from having used it for a small number of programming projects. I had a basic understanding of some of the more commonly used features, however, I had no knowledge of how its backend worked or any of the commands directly manipulating the store itself.
+
+As part of Part 1A Foundations of Computer Science I was taught Standard ML, but apart from this I have had no other exposure to languages in the ML family. This meant that most of the features necessary for writing real-world code in OCaml were new to me.
+
+MirageOS provided some libraries meaning that not all of the features I needed had to be implemented from scratch. These included the libraries ocaml-git and mail-message. Where these were used is described in the implementation section.
 
 \section{OCaml}
 
@@ -52,7 +60,7 @@ Git\cite{code_git} is a well-know, widely used distributed version-control syste
 
 \subsection{Content-Addressable Storage}
 
-A content-addressable storage system is, exactly as the name describes, a storage system where each object is addressed by its content. This is different to most storage systems which tend to be location-addressed where the index need-not have any relation to the data it points to (ie we can name a file anything regardless of its content). This is implemented in git using hash functions. It works by storing data on top of a standard filesystem except that the file name is always a hash of the contents of the file itself. The reason this is used is then the entire version control can just be implemented as a form of hash chain. We can always be sure that a file is the correct historic copy because the file name derives directly from its contents and a small change in its contents will generally cause a large change in its name (due to the definition of the hash function). 
+A content-addressable storage system is, exactly as the name describes, a storage system where each object is addressed by its content. This is different to most storage systems which tend to be location-addressed where the index need-not have any relation to the data it points to (in other words, we can name a file anything regardless of its content). This is implemented in git using hash functions. It works by storing data on top of a standard filesystem except that the file name is always a hash of the contents of the file itself. The reason this is used is then the entire version control can just be implemented as a form of hash chain. We can always be sure that a file is the correct historic copy because the file name derives directly from its contents and a small change in its contents will generally cause a large change in its name (due to the definition of the hash function). 
 
 \subsection{Porcelain and Plumbing}
 
