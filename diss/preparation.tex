@@ -8,7 +8,7 @@ The original plan specified that the project would consist of a git overlay for 
 
 \subsection{Requirements}
 
-Before starting the project, it was necessary to work out exactly which features needed to be implemented. This was done by performing a requirements analysis. I started by finding out what different operations a maildir can support. From reading (TODO:Insert article)\cite{TODO} I found these to be:
+Before starting the project, it was necessary to work out exactly which features needed to be implemented for a functioning mailbox. This was done by looking a what operations can take place and any extra features the Maildir standard has. A mailbox is used at two different times, when email is delivered, and when it is accessed. This can be by the same or different applications. This means I must support delivery and the operations that may be performed by an access. When email is accessed, this is so that it can be read by an application, so retrieval must be supported. Also, the Maildir standard allows for flags (ie metadata) to be set on an email. Therefore a way to perform this must also be supported. Finally, there must be a way to see what emails exist so that the above operations can be performed. The operations chosen for implementation based on these points are below:
 
 \begin{itemize}
   \item Email delivery
@@ -56,7 +56,7 @@ Beyond Lwt monads are a useful way to handle exceptions. Rather than having a st
 
 \section{Git}
 
-Git\cite{code_git} is a well-know, widely used distributed version-control system. Its main and original use was for programmers to use as a version-control system for their software\cite{TODO}. It is implemented on top of a Content-Addressable Storage system, and provides the primitives needed for version control as commands that act on this. As it provides version control it can be used to implement strong consistency which is why I chose to use it for the project. Therefore it was important to understand the internals so that I could interface with it correctly.
+Git\cite{code_git} is a well-know, widely used distributed version-control system. Its main and original use was for programmers to use as a version-control system for their software\cite{chacon2014git}. It is implemented on top of a Content-Addressable Storage system, and provides the primitives needed for version control as commands that act on this. As it provides version control it can be used to implement strong consistency which is why I chose to use it for the project. Therefore it was important to understand the internals so that I could interface with it correctly.
 
 \subsection{Content-Addressable Storage}
 

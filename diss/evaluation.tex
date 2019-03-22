@@ -1,4 +1,4 @@
-\chapter{Evaluation}
+\chapter{Evaluation} \label{section:evaluation}
 
 In this chapter I will discuss how I discuss whether the project has successfully met its original objectives. I will start by describing how I designed and performed the tests. Then I will show and discuss the results of the tests before finally assessing this results in the contexts of my success criteria.
 
@@ -47,7 +47,7 @@ The actions for which these tests would be performed along with how each was exe
 
 Working out how to perform the concurrency tests proved slightly problematic as OCaml currently has no true multicore support meaning that it lacks true parallelism. I originally attempted to implement the testing using the Unix syscall fork in my OCaml code. However, without having shared memory between the parent and the child process there was no was to know when a subprocess had finished without introducing extra overhead (such as message passing). This meant that I had no way to limit the total number of threads in use at any one time. Therefore I decided to use the command-line clients that I wrote as opposed to the libraries and time the execution on the command-line. To do this I used the xargs command to provide different levels of parallelism using its maxprocs argument which limits the maximum number of processes running at once (as OCaml has a global interpreter lock, one process effectively corresponds to one thread). An example of a bash script used to measure delivery times in this was can be seen in the appendix.
 
-\section{Functionality tests}
+\section{Functionality tests} \label{section:functionality_tests}
 
 Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repositiory. This means that as long as the tests themselves did not miss out any corner cases then Gitmaildir provides all the functionality intended and that this functionality works correctly. It is of course still possible that the code contains residual bugs not found by these tests. However, we cannot provide any better guarantees without a formal proof that the code is correct which is beyond the scope of this project.
 
@@ -66,8 +66,11 @@ This run has ID `319CECA5-8F9A-4CEC-9E1F-220710802BE4`.
 
 \section{Performance tests}
 
-The first metric that I looked into was delivery times. In Figure \ref{fig:tds_combined} we can see that sequentially the delivery times grow linearly, as expected. We can also see from this graph that the same is true for all three mailbox types. The more interesting insight is seen when we compare how the different mailboxes perform at different levels of parallelism. This can be seen for Gitmaildir in Figure \ref{fig:tdpp}. At a quick glance this looks like a reciprocal curve. We would expect such a curve for a completely parallelisable program as the runtime for $n$ cores should be equal to $\frac{1}{n}$. However, unlike a pure implementation of Maildir, Gitmaildir is not completely parallelisable so it is more useful to study a graph of the speedup where we define speedup as $speedup = \frac{\textrm{runtime for 1 core}}{\textrm{runtime for n cores}}$.
+The first metric that I looked into was delivery times. In Figure \ref{fig:tds_combined} we can see that sequentially the delivery times grow linearly, as expected. We can also see from this graph that the same is true for all three mailbox types. The more interesting insight is seen when we compare how the different mailboxes perform at different levels of parallelism. This can be seen for Gitmaildir in Figure \ref{fig:tdpp}. At a quick glance this looks like a reciprocal curve. We would expect such a curve for a completely parallelisable program as the runtime for $n$ cores should be equal to $\frac{1}{n}$. However, unlike a pure implementation of Maildir, Gitmaildir is not completely parallelisable so it is more useful to study a graph of the speedup where we define speedup as in equation \ref{eq:speedup}.
 
+\begin{equation} \label{eq:speedup}
+\textrm{speedup} = \frac{\textrm{runtime for 1 core}}{\textrm{runtime for n cores}}
+\end{equation}
 
 \begin{figure}[h]
     \centering
@@ -84,18 +87,32 @@ The first metric that I looked into was delivery times. In Figure \ref{fig:tds_c
     \label{fig:tdpp}
 \end{figure}
 
-For a program that is completely parallel we would expect a straight line, so when the plot starts to veer from this line and eventually become flat we can see where the sequential code becomes a bottleneck. The speedup graph for Gitmaildir can be seen in figure \ref{fig:tdpp_speedup}. From this graph we can see that Gitmaildir starts to slow at around 5 cores. This will be due to the locking when making commits as that is the only part of the code that is required to be sequential and so it is the bottleneck under highly parallel loads.
+For a program that is completely parallel we would expect a straight line, so when the plot starts to veer from this line and eventually become flat we can see where the sequential code becomes a bottleneck. The speedup graph for Gitmaildir can be seen in figure \ref{fig:tdpp_speedup}. From this graph we can see that Gitmaildir starts to slow at around 5 cores. I think that this was due to the locking when making commits as that is the only part of the code that is required to be sequential and so it is the bottleneck under highly parallel loads.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{figs/tdpp_speedup}
+    \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir}
+    \label{fig:tdpp_speedup}
+\end{figure}
 
 A similar graph for standard Maildir and Mbox can be seen in figure \ref{fig:tdpp_speedup_combined}. As expected, the line produced for Maildir is straight. This is because for delivery Maildir has no sequential operations at all meaning that processes can run in parallel as long as there are enough cores. On the other hand, the result for Mbox is surprising, being also a straight line even though accesses to the mailbox must be sequential. I hypothesised that this was because although the accesses themselves must be sequential, appending to a file is a very fast operation, especially when the volume of data is not too great. Therefore most of the time is spent preparing to write to the file, for example when reading in the data and opening the file, meaning that even though the access itself is purely sequential, the act of delivering data has other parts which are parallelisable and are the majority of the workload in the instance of delivering an email. Overall from this graph, we can see that when it comes to speedup, Gitmaildir vastly underperforms when compared to Maildir and Mbox.
 
 \begin{figure}[h]
     \centering
     \includegraphics{figs/tdpp_speedup_combined}
-    \caption{The time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox}
+    \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox}
     \label{fig:tdpp_speedup_combined}
 \end{figure}
 
-It is also important to compare the raw speeds as well as speedup, and we can see that Gitmaildir also underperforms here. We can see in figure \ref{fig:tdp_combined} that Gitmaildir is much slower (around ten times) than Mbox and Maildir. This is unsurprising given that it is doing far more work. For each deliver, Gitmaildir writes to three files, performs three hashes and also has to encode the data and this does not include reading from the store at the start. Mbox and Maildir both only need to write raw data into a single file. However the real problem seems to be that it does not benefit from being more parallel even as much as Mbox does.
+It is also important to compare the raw speeds as well as speedup, and we can see that Gitmaildir also underperforms here. We can see in figure \ref{fig:tdpp_combined} that Gitmaildir is much slower (around ten times) than Mbox and Maildir even when running in parallel. This is unsurprising given that it is doing far more work. For each deliver, Gitmaildir writes to three files, performs three hashes and also has to encode the data and this does not include reading from the store at the start. Mbox and Maildir both only need to write raw data into a single file. However the real problem seems to be that it does not benefit from being more parallel even as much as Mbox does.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{figs/tdpp_combined}
+    \caption{The time taken the deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox}
+    \label{fig:tdpp_combined}
+\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -109,11 +126,11 @@ As well as email delivery, I looked into the performance of editing email metada
 \begin{figure}[h]
     \centering
     \includegraphics{figs/tmpp_speedup_combined}
-    \caption{The time taken to change the metadata of 1000 emails at different levels of parallelism.}
+    \caption{The speedup in time taken to change the metadata of 1000 emails at different levels of parallelism.}
     \label{fig:tmpp_speedup_combined}
 \end{figure}
 
-As before I also measured how the different mailboxes performed at different levels of parallelism. We can see in figure \ref{fig:tmpp_speedup_combined} TODO: look at graphs, talk about it, then summarise how Gitmaildir did
+As before I also measured how the different mailboxes performed at different levels of parallelism. We can see in figure \ref{fig:tmpp_speedup_combined} that the lines for both Gitmaildir and Maildir are almost straight matching the equation $y=x$ which shows that they are both able to fully exploit the parallelism. On the other hand the line for Mbox is flat which means that for this metric it is not able to exploit any parallelsim at all because the majority of the time is spent reading and writing the mailbox which is sequential. This matches the expected findings and shows that Gitmaildir in this case has managed to inherit the benefits provided by the maildir specification while still maintaining strong consistency. When compared to the delivery test, I think that this shows Gitmaildir maintains its parallel advantage as long as the operation being performed on the mailbox is sufficiently long-running.
 
 For all of the above tests I tried to make sure that the testing conditions were fair across the different mailbox types and would be useful for real usage. There are of course a few caveats to the methods that I will mention. First, the filesystem format used will have made a difference to the results because filesystems perform different types of indexing and storage. My choice of tmpfs was made specifically to remove disk access latency from being included in my timing, but as most mailboxes are stored in normal disk space such as ext4 the indexing may cause timing differences unrelated to disk accesses. There is also the question of whether testing parallelisation using xargs provides accurate results. It will add overhead that I may have been able to avoid through a different method, however it will be the same overhead for all the tests so the comparisons should still be fair.
 

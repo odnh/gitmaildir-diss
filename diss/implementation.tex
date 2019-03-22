@@ -153,7 +153,7 @@ There were a many different ways in which I could have implemented the daemon, t
 
 Once we have knowledge of a change having happened we have to work out what needs to be done. I did this by calculating a diff (of the files as contents of a directory as opposed to the contents of the files themselves) between the files in Git storage and those in Maildir storage on every notification.
 
-The diff itself was calculated by my own implementation of the standard dynamic programming algorithm for solving the Longest Common Subsequence problem\cite{lcs}. Once the diff has been performed I then check for emails which have the same name but only the flags are changed as this indicates a modification as opposed to a new delivery or deletion. In the next paragraph I will describe how the information outputted from this process is used.
+The diff itself was calculated by a reading in a list of the contents of each directory and checking to see if each item was a member of the other. I was able to use this as opposed to a more standard method such as computing the longest common subsequence because ordering does not matter and all the filenames are unique. Once the diff has been performed I then check for emails which have the same name but only the flags are changed as this indicates a modification as opposed to a new delivery or deletion. In the next paragraph I will describe how the information outputted from this process is used.
 
 Additions of new emails are easy to handle as we just need to make a new write. Moves are also easy to track as the only name changes come from editing the flags at the end of a file name, the rest of it always remains the same. The more difficult operation comes from deletion as naively it looks the same as an addition to the alternate store. I solved this by using the Git history: If we look at the previous commit it should be the one before the deletion took place. If the email existed in the previous Git commit then a deletion took place (it is the same for the Maildir and Gitmaildir) so we can safely delete it from the relevant store.
 
@@ -182,7 +182,7 @@ For the project I chose to use the Dune\cite{code_dune} build system. This was b
 
 \section{Extensions} \label{section:extensions}
 
-TODO: once extensions are complete
+(TODO: once extensions are complete)
 
 \section{Repository overview}
 
