@@ -5,6 +5,7 @@
 \usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
 \usepackage{booktabs}  % for nicer tables
 \usepackage{verbatim}
+\usepackage{pdfpages}  % include api_docs in appendix
 \usepackage{makecell}  % for overfull title table cell in proforma
 \usepackage{adjustbox} % for the proforma table (resizes to get rid of latex warnings)
 \usepackage{minted} % code highlighting
@@ -125,6 +126,13 @@ extent for a comparable purpose.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % the appendices
 \appendix
+
+\chapter{Git\_ops module API documentation}
+\includepdf[scale=0.9,page=1-,pagecommand={\thispagestyle{headings}}]{figs/api_docs}
+
+\chapter{Timing script sample}
+
+\input{timing_script}
 
 \chapter{Project Proposal}
 
