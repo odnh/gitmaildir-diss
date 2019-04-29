@@ -34,11 +34,11 @@ An additional feature that Git provides on top of the standard filesystem is bra
 As decided in the requirements analysis, the Gitmaildir library provides the following features:
 
 \begin{itemize}
-\item email delivery
-\item email move/rename (this includes altering flags)
-\item email deletion
-\item conversion of a maildir to a gitmaldir (and vice versa)
-\item the ability to add different hooks when a modification occurs so that extensions can be implemented more easily
+\item Email delivery
+\item Email move/rename (this includes altering flags)
+\item Email deletion
+\item Eonversion of a maildir to a gitmaldir (and vice versa)
+\item The ability to add different hooks when a modification occurs so that extensions can be implemented more easily
 \end{itemize}
 
 All of these operations required interaction between the filesystem and/or interaction with a git store. To manage interaction with a git store I used the library ocaml-git. As all this provided was the means to read and write different types of elements of a Git store in a consistent way it was necessary to implement the functionality of some of the Git plumbing commands almost from scratch.
@@ -119,6 +119,7 @@ let (>>=|) = Lwt_result.bind_result
 let (>>==) = Lwt_result.bind
 \end{minted}
 \caption{Code segment of the definitions of the new infix operators}
+\label{listing:infixdef}
 \end{listing}
 
 \begin{listing}[h]
@@ -191,15 +192,14 @@ For the project I chose to use the Dune\cite{code_dune} build system. This was b
 
 \subsection{Unit tests}
 
-TODO
+The first thing that had to be done about unit testing was choosing a library to help write them. In OCaml there is a lot of choice for libraries to use and there does not seem to be a single standard that by far the most common. Therefore I had to thoroughly assess the different options. It turned out that were two main types of unit testing possible:
+\begin{itemize}
+  \item \textbf{Expect tests:} These are quite interesting, because all the testing is written inline with comparisons to what the standard REPL would output. Then, before compilation, an extra syntax rewriter is run either removing them or making them executeable code if we instead plan to run tests.
+  \item \textbf{Standard tests:} These are what most developers will be more used to. You write them in a separate file and in them describe how to compare the results to check if they are correct.
+\end{itemize}
+As I am more used to the second of these and did not want to clutter the source files with my testing I decided to opt for the more standard style of unit tests. For these I decided to use a library called alcotest\cite{code_alcotest} as it seems to be both stable and the most modern of the selection of such libraries available.
 
-Parts:
-- Choice of library (alcotest) (discuss inline AST rewrite tests)
-- How tests were written
-- How results were used/benefitted process
-
-The first thing that had to be done about unit testing was choosing a library. In OCaml there is a lot of choice for libraries to use and there does not seem to be one standard that most people use so I had to thoroughly assess the different options. It turned out that were two main types of unit testing possible:
-Inline tests...
+The tests themselves were written to cover all functions of the API with the aim of covering edge cases and at least one standard case for each funtion in the API. I then used these results during develpment to make sure that and changes did not have unintended consequences.
 
 \section{Extensions} \label{section:extensions}
 

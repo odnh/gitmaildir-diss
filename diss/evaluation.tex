@@ -49,16 +49,19 @@ Working out how to perform the concurrency tests proved slightly problematic as 
 
 \section{Functionality tests} \label{section:functionality_tests}
 
-Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repository. This means that as long as the tests themselves did not miss out any corner cases then Gitmaildir provides all the functionality intended and that this functionality works correctly. It is of course still possible that the code contains residual bugs not found by these tests. However, we cannot provide any better guarantees without a formal proof that the code is correct which is beyond the scope of this project.
+Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repository. This means that as long as the tests themselves did not miss out any corner cases then Gitmaildir provides all the functionality intended and that this functionality works correctly. It is of course still possible that the code contains residual bugs not found by these tests. However, we cannot provide any better guarantees without a formal proof that the code is correct which is well beyond the scope of this project.
 
 \begin{figure}[h]
 \centering
 \begin{Verbatim}
 gitmaildir_tests alias test/runtest
 Testing Gitmaildir tests.
-This run has ID `319CECA5-8F9A-4CEC-9E1F-220710802BE4`.
-[OK]                git_ops          0   TEST.
-[OK]                maildir          0   TEST.
+This run has ID `D5A89D95-7043-4B4D-A371-1EF83F2C584D`.
+[OK]                git_ops          0   init_empty_blob.
+[OK]                git_ops          1   add_blob_to_store.
+[OK]                git_ops          2   commit_tree.
+[OK]                git_ops          3   modify_tree.
+[OK]                git_ops          4   add_blob_to_tree.
 \end{Verbatim}
 \caption{The final output from the running of unit tests on the finished codebase.}
 \label{fig:unittests}
@@ -181,4 +184,4 @@ Therefore, the second of my success criteria has been met and so both of my succ
 
 \section{Extensions}
 
-TODO: Add once extensions are complete
+TODO: Haven't collected all the data yet for this
