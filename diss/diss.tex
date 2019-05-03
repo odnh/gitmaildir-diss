@@ -3,13 +3,15 @@
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
 \usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
+\usepackage{tikz}      % fancy diagrams
+\usepackage{dirtree}   % for directory tree
 \usepackage{booktabs}  % for nicer tables
 \usepackage{verbatim}
 \usepackage{pdfpages}  % include api_docs in appendix
 \usepackage{makecell}  % for overfull title table cell in proforma
 \usepackage{adjustbox} % for the proforma table (resizes to get rid of latex warnings)
-\usepackage{minted} % code highlighting
-\usepackage{enumitem} % modify enum environments easily
+\usepackage{minted}    % code highlighting
+\usepackage{enumitem}  % modify enum environments easily
 \usepackage[algoruled]{algorithm2e} % for algorithm typesetting
 \usepackage[backend=biber,style=numeric]{biblatex}
 \addbibresource{refs.bib}
@@ -28,43 +30,66 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title
 
-\pagestyle{empty}
+\thispagestyle{empty}
 
 \rightline{\LARGE \textbf{Oliver Hope}}
+
+\begin{tikzpicture}[remember picture,overlay]
+   \node[anchor=south,inner sep=60pt] at (current page.south)
+   {\includegraphics[scale=0.4]{figs/cu_logo}};
+\end{tikzpicture}
 
 \vspace*{60mm}
 \begin{center}
 \Huge
-\textbf{A strongly consistent index for email using git and MirageOS.} \\[5mm]
+\textbf{A strongly consistent index for email using Git and MirageOS.} \\[5mm]
 Computer Science Tripos -- Part II \\[5mm]
 Jesus College \\[5mm]
 \today  % today's date
 \end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Proforma, table of contents and list of figures
+% Declaration, Proforma, table of contents and list of figures
 
 \pagestyle{plain}
+
+\newpage
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\section*{Declaration}
+
+I, Oliver Hope of Jesus College, being a candidate for Part II of the Computer Science Tripos, hereby declare that this dissertation and the work described in it are my own work, unaided except as may be specified below, and that the dissertation does not contain material that has already been used to any substantial extent for a comparable purpose.
+\\*
+\\*
+I, Oliver Hope of Jesus College,
+am content for my dissertation to be made available to the students and staff of the University.
+
+\bigskip
+\leftline{Signed}
+
+\medskip
+\leftline{Date}
 
 \chapter*{Proforma}
 
 \begin{adjustbox}{width={\textwidth},totalheight={\textheight},keepaspectratio}%
 {\large
 \begin{tabular}{ll}
-Name:               & \bf Oliver Hope \\
-College:            & \bf Jesus College \\
-Project Title:      & \makecell[l]{\bf A strongly consistent index for email using git \\ \bf and MirageOS.} \\
+Candidate Number:   & \bf 2329F \\
+Project Title:      & \makecell[l]{\bf A strongly consistent index for email using Git \\ \bf and MirageOS.} \\
 Examination:        & \bf Computer Science Tripos -- Part II, June 2019 \\
 Word Count:         & \bf \input{|"texcount -inc -sum -1 diss.tex"}\footnotemark[1] \\
-Line Count:         & INSERT LINE COUNT \\
+Line Count:         & 1925\footnotemark[2] \\
 Project Originator: & Dr A.~Madhavapeddy \\
 Supervisor:         & Mr D.~Allsopp \\
 \end{tabular}
 }
 \end{adjustbox}
-\footnotetext[1]{This word count was computed
-by \texttt{texcount -inc -sum -1 diss.tex}
-}
+\footnotetext[1]{This word count was computed by \texttt{texcount -inc -sum -1 diss.tex}}
+\footnotetext[2]{Line count is count of OCaml code excluding comments and blank lines. Also excluded are all testing scripts}
+
 \stepcounter{footnote}
 
 
@@ -81,20 +106,6 @@ The core of the project built was a library, gitmaildir, which handles interacti
 There have been no special difficulties.
 
 \newpage
-\section*{Declaration}
-
-I, Oliver Hope of Jesus College, being a candidate for Part II of the Computer
-Science Tripos, hereby declare
-that this dissertation and the work described in it are my own work,
-unaided except as may be specified below, and that the dissertation
-does not contain material that has already been used to any substantial
-extent for a comparable purpose.
-
-\bigskip
-\leftline{Signed}
-
-\medskip
-\leftline{Date}
 
 \tableofcontents
 
@@ -104,6 +115,9 @@ extent for a comparable purpose.
 %TC:endignore
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now for the chapters
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
 
 \pagestyle{headings}
 

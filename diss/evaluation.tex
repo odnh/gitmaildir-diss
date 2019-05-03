@@ -17,6 +17,7 @@ The main trade-off between Mbox and Maildir is one of concurrency and locking. T
 Multiple different operations were tested and for each operation there were two typed of test which are described below in tables \ref{table:tests} and \ref{table:actions}:
 
 \begin{table}[h]
+\footnotesize
 \centering
 \begin{tabular}{p{3.5cm} p{7.5cm} p{3cm}}
   \toprule
@@ -26,11 +27,12 @@ Multiple different operations were tested and for each operation there were two 
   Impact of concurrency on action & Time how long it takes to perform action with different numbers of threads & 1-10 threads in steps of 1 \\
   \bottomrule
 \end{tabular}
-\caption{The different types of perfmance testing}
+\caption{The different types of performance testing}
 \label{table:tests}
 \end{table}
 
 \begin{table}[h]
+\footnotesize
 \centering
 \begin{tabular}{p{4cm} p{10.5cm}}
   \toprule
@@ -49,7 +51,7 @@ Working out how to perform the concurrency tests proved slightly problematic as 
 
 \section{Functionality tests} \label{section:functionality_tests}
 
-Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repository. This means that as long as the tests themselves did not miss out any corner cases then Gitmaildir provides all the functionality intended and that this functionality works correctly. It is of course still possible that the code contains residual bugs not found by these tests. However, we cannot provide any better guarantees without a formal proof that the code is correct which is well beyond the scope of this project.
+Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repository. This means that as long as the tests themselves did not miss out any corner cases (I made sure that the tests provide full coverage of the library functions) then Gitmaildir provides all the functionality intended and that this functionality works correctly. However, It is still possible that the code contains residual bugs not found by these tests.
 
 \begin{figure}[h]
 \centering
@@ -79,7 +81,7 @@ The first metric that I looked into was delivery times. In Figure \ref{fig:tds_c
     \centering
     %\includegraphics{figs/tds_combined}
     \input{figs/tds_combined.pdf_tex}
-    \caption{The time taken to deliver 1000 emails sequentially for Gitmaildir, Maildir, and Mbox.}
+    \caption{The time taken to deliver 1000 emails sequentially for Gitmaildir, Maildir, and Mbox. Ribbon represents 95\% confidence interval (it is very narrow and so hard to see).}
     \label{fig:tds_combined}
 \end{figure}
 
@@ -88,7 +90,7 @@ The first metric that I looked into was delivery times. In Figure \ref{fig:tds_c
     \centering
     %\includegraphics{figs/tdpp}
     \input{figs/tdpp.pdf_tex}
-    \caption{The time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir}
+    \caption{The time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp}
 \end{figure}
 
@@ -98,7 +100,7 @@ For a program that is completely parallel we would expect a straight line, so wh
     \centering
     %\includegraphics{figs/tdpp_speedup}
     \input{figs/tdpp_speedup.pdf_tex}
-    \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir}
+    \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp_speedup}
 \end{figure}
 
@@ -108,7 +110,7 @@ A similar graph for standard Maildir and Mbox can be seen in figure \ref{fig:tdp
     \centering
     %\includegraphics{figs/tdpp_speedup_combined}
     \input{figs/tdpp_speedup_combined.pdf_tex}
-    \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox}
+    \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp_speedup_combined}
 \end{figure}
 
@@ -118,7 +120,7 @@ It is also important to compare the raw speeds as well as speedup, and we can se
     \centering
     %\includegraphics{figs/tdpp_combined}
     \input{figs/tdpp_combined.pdf_tex}
-    \caption{The time taken the deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox}
+    \caption{The time taken the deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp_combined}
 \end{figure}
 
@@ -126,17 +128,17 @@ It is also important to compare the raw speeds as well as speedup, and we can se
     \centering
     %\includegraphics{figs/tmp_combined}
     \input{figs/tmp_combined.pdf_tex}
-    \caption{The time taken to change the metadata of different numbers of emails for Gitmaildir, Maildir and Mbox}
+  \caption{The time taken to change the metadata of different numbers of emails for Gitmaildir, Maildir and Mbox. Ribbon represents 95\% confidence interval (it is very narrow and so hard to see).}
     \label{fig:tmp_combined}
 \end{figure}
 
-As well as email delivery, I looked into the performance of editing email metadata. This differs from delivery because it involves retrieving the correct email in the mailbox and modifying it in someway (a write into the file for Mbox, a filename change for the other two). Figure \ref{fig:tmp_combined} shows how the different mailboxes performed at a fixed level of parallelism. We can see a very different result here to before. Whereas for deliver Gitmaildir was significantly slower than the other two, it is now Mbox that is significantly slower (roughly 5 times slower than Gitmaildir and 10 times slower than Maildir). This comes down to the fundamental difference between how the two systems store email and email metadata. For Maildirs, because its flags are on the end of the filename we do not have to open files and then search inside them unlike Mbox. The greatest speedup probably can be attributed then to the fact that an Mbox is not indexed, and although a Maildir is not, the directory itself is which makes it much faster to get to the email to modify.
+As well as email delivery, I looked into the performance of editing email metadata. This differs from delivery because it involves retrieving the correct email in the mailbox and modifying it in someway (a write into the file for Mbox, a filename change for the other two). Figure \ref{fig:tmp_combined} shows how the different mailboxes performed at a fixed level of parallelism. We can see a very different result here to before. Whereas for deliver Gitmaildir was significantly slower than the other two, it is now Mbox that is significantly slower (roughly 5 times slower than Gitmaildir and 10 times slower than Maildir). This comes down to the fundamental difference between how the two systems store email and email metadata. For Maildirs, because its flags are on the end of the filename we do not have to open files and then search inside them unlike Mbox. The greatest speedup probably can be attributed then to the fact that an Mbox is not indexed, and although a Maildir is not explicitly indexed either\footnote{Some implementations, notably Dovecot\cite{dovecot_maildir}, actually do lock the Maildir to provide an index, however this means that we immediately lose its concurrency benefit.}, the directory itself is what makes it much faster to get to the email to modify.
 
 \begin{figure}[h]
     \centering
     %\includegraphics{figs/tmpp_speedup_combined}
     \input{figs/tmpp_speedup_combined.pdf_tex}
-    \caption{The speedup in time taken to change the metadata of 1000 emails at different levels of parallelism.}
+    \caption{The speedup in time taken to change the metadata of 1000 emails at different levels of parallelism. Ribbon represents 95\% confidence interval.}
     \label{fig:tmpp_speedup_combined}
 \end{figure}
 
@@ -162,7 +164,7 @@ The first success criterion stated that the project would be evaluated against:
 
 This was provided by the operations that I built on top of the ocaml-git library allowing a mixture of Git plumbing commands and Git porcelain commands to be executed in OCaml. The unit tests prove that the functionality works. As ocaml-git works on MirageOS (it was written as part of the MirageOS project) then a library that uses it as the backend will also work on MirageOS so the second part of the criterion is satisfied. This has been checked on MirageOS by writing a simple application that commits a file to a Git store using my library and it worked successfully. As the rest of ocaml-git works on MirageOS and my library passes all the unit tests, it can be inferred that my Git overlay will work on top of the filesystem in MirageOS.
 
-Therefore, the first of my two success criteria has been met.
+Therefore, the first of the two success criteria has been met.
 
 \subsection{Strong consistency}
 
@@ -180,8 +182,10 @@ Because each operation is stored in a separate commit and we have a single main 
 
 The second half of this criterion specifies the application must allow all standard Maildir operations. I have taken this to mean the ones I defined in my requirements analysis. So I have also met this part of the criterion. However, as the Gitmaildir is a standard Maildir structure in a Git repository, any other features that do not require non-standard extensions can be easily added by manipulating the Maildir like a Git standard Git repository.
 
-Therefore, the second of my success criteria has been met and so both of my success criteria have been met meaning that my project has successfully achieved its original aims.
+Therefore, the second of the success criteria has been met and so both of the success criteria have been met meaning that my project has successfully achieved its original aims.
 
 \section{Extensions}
 
-TODO: Haven't collected all the data yet for this
+The first extension was to implement a plugin system for Gitmaildir. I succeeded in this which can be seen by the fact that the second extension was possible which was to build a plugin for Gitmaildir. The plugin system has the benefit that it was written in such a way to be easily extensible itself. It would be fairly straightforward to add different ways of loading and configuring plugins at runtime for example.
+
+The second extension was to build a plugin that creates a mirror mailbox where each email is converted to plain text. This was built, and upon testing with a repository of real emails they were successfully converted to plain text in a separate branch (which is how the plugin maintains the mirror repository). However, it is possible that there are edge cases I do not account for which will lead to some parts of the email not being converted to plain text.
