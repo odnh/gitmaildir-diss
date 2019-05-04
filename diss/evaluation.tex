@@ -79,7 +79,6 @@ The first metric that I looked into was delivery times. In Figure \ref{fig:tds_c
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tds_combined}
     \input{figs/tds_combined.pdf_tex}
     \caption{The time taken to deliver 1000 emails sequentially for Gitmaildir, Maildir, and Mbox. Ribbon represents 95\% confidence interval (it is very narrow and so hard to see).}
     \label{fig:tds_combined}
@@ -88,17 +87,16 @@ The first metric that I looked into was delivery times. In Figure \ref{fig:tds_c
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tdpp}
     \input{figs/tdpp.pdf_tex}
     \caption{The time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp}
 \end{figure}
 
 For a program that is completely parallel we would expect a straight line, so when the plot starts to veer from this line and eventually become flat we can see where the sequential code becomes a bottleneck. The speedup graph for Gitmaildir can be seen in figure \ref{fig:tdpp_speedup}. From this graph we can see that Gitmaildir starts to slow at around 5 threads. I think that this was due to the locking when making commits as that is the only part of the code that is required to be sequential and so it is probably the bottleneck under highly parallel loads.
+I hypothesised that this was due to the locking when making commits as that is the only part of the code that is required to be sequential and so is probably the bottleneck under highly parallel loads. Therefore, I performed rudimentary profiling by timing this compared to the overall runtime for delivery. This showed that on average, the section under a mutex (adding the new mail to the tree and committing) used 95\% of the runtime. Sseeing as it takes the majority of the time and can not be run in parallel, it was definitely the bottleneck here.
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tdpp_speedup}
     \input{figs/tdpp_speedup.pdf_tex}
     \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp_speedup}
@@ -108,7 +106,6 @@ A similar graph for standard Maildir and Mbox can be seen in figure \ref{fig:tdp
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tdpp_speedup_combined}
     \input{figs/tdpp_speedup_combined.pdf_tex}
     \caption{The speedup in time taken to deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp_speedup_combined}
@@ -118,7 +115,6 @@ It is also important to compare the raw speeds as well as speedup, and we can se
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tdpp_combined}
     \input{figs/tdpp_combined.pdf_tex}
     \caption{The time taken the deliver 1000 emails at different levels of parallelism for Gitmaildir, Maildir and Mbox. Ribbon represents 95\% confidence interval.}
     \label{fig:tdpp_combined}
@@ -126,7 +122,6 @@ It is also important to compare the raw speeds as well as speedup, and we can se
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tmp_combined}
     \input{figs/tmp_combined.pdf_tex}
   \caption{The time taken to change the metadata of different numbers of emails for Gitmaildir, Maildir and Mbox. Ribbon represents 95\% confidence interval (it is very narrow and so hard to see).}
     \label{fig:tmp_combined}
@@ -136,13 +131,12 @@ As well as email delivery, I looked into the performance of editing email metada
 
 \begin{figure}[h]
     \centering
-    %\includegraphics{figs/tmpp_speedup_combined}
     \input{figs/tmpp_speedup_combined.pdf_tex}
     \caption{The speedup in time taken to change the metadata of 1000 emails at different levels of parallelism. Ribbon represents 95\% confidence interval.}
     \label{fig:tmpp_speedup_combined}
 \end{figure}
 
-As before I also measured how the different mailboxes performed at different levels of parallelism. We can see in figure \ref{fig:tmpp_speedup_combined} that the lines for both Gitmaildir and Maildir are almost straight matching the equation $y=x$ which shows that they are both able to fully exploit the parallelism. On the other hand the line for Mbox is flat which means that for this metric it is not able to exploit any parallelism at all because the majority of the time is spent reading and writing the mailbox which is sequential. This matches the expected findings and shows that Gitmaildir in this case has managed to inherit the benefits provided by the Maildir specification while still maintaining strong consistency. When compared to the delivery test, I think that this shows Gitmaildir maintains its parallel advantage as long as the operation being performed on the mailbox is sufficiently long-running.
+As before I also measured how the different mailboxes performed at different levels of parallelism. We can see in figure \ref{fig:tmpp_speedup_combined} that the lines for both Gitmaildir and Maildir are almost straight matching the equation $y=x$ which shows that they are both able to fully exploit the parallelism. On the other hand the line for Mbox is flat which means that for this metric it is not able to exploit any parallelism at all because the majority of the time is spent reading and writing the mailbox which is sequential. This matches the expected findings and shows that Gitmaildir in this case has managed to inherit the benefits provided by the Maildir specification while still maintaining strong consistency. When compared to the delivery test, I believe that this shows Gitmaildir maintains its parallel advantage as long as the operation being performed on the mailbox is sufficiently long-running.
 
 \subsection{Test conditions and caveats}
 

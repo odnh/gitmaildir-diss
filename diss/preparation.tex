@@ -41,13 +41,13 @@ Sometimes we want to store data which we know will not be changed at any point a
 \begin{figure}[h]
   \center
   \includegraphics[width=0.8\textwidth]{figs/git-data-model}
-  \caption{An example of a possible layout of objects in a Git store containing three commits. Example taken from the Pro Git\cite{chacon2014git}.}
+  \caption{An example of a possible layout of objects in a Git store containing three commits. Example taken from the Pro Git book\cite{chacon2014git}.}
   \label{fig:gitdatamodel}
 \end{figure}
 
 \subsection{Porcelain and Plumbing}
 
-Git has two sets of command-line tools: its ``porcelain'' tools and its ``plumbing'' tools. The important difference is that the porcelain tools are the ones that users of the version control system should use for all normal operations but the plumbing tools are lower level and allow direct interaction with the Git store. As I am using the Git store in slightly non-standard ways, it was important to learn the plumbing commands so that I can use the full power of the Git storage system while simultaneously leaving the Git store in a valid state after each operation. A further description of the differences can be found in the Git book\cite{chacon2014git}.
+Git has two sets of command-line tools: its ``porcelain'' tools and its ``plumbing'' tools. The important difference is that the porcelain tools are the ones that users of the version control system should use for all normal operations but the plumbing tools are lower level and allow direct interaction with the Git store. As I am using the Git store in slightly non-standard ways, it was important to learn the plumbing commands so that I can use the full power of the Git storage system while simultaneously leaving the Git store in a valid state after each operation. A further description of the differences can be found in the Pro Git book\cite{chacon2014git}.
 
 \section{ocaml-git}
 
