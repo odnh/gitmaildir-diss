@@ -35,10 +35,10 @@ As decided in the requirements analysis, the Gitmaildir library provides the fol
 
 \begin{itemize}
 \item Email delivery
+\item Email retrieval
 \item Email move/rename (this includes altering flags)
 \item Email deletion
 \item Conversion of a Maildir to a Gitmaldir (and vice versa)
-\item The ability to add different hooks when a modification occurs so that extensions can be implemented more easily
 \end{itemize}
 
 All of these operations required interaction between the filesystem and/or interaction with a git store. To manage interaction with a git store I used the library ocaml-git. As all this provided was the means to read and write different types of elements of a Git store in a consistent way it was necessary to implement the functionality of some of the Git plumbing commands almost from scratch.
@@ -163,28 +163,27 @@ There were many different ways in which I could have implemented the daemon, the
 
 Once we have knowledge of a change having happened we have to work out what needs to be done. I did this by calculating a diff (of the files as contents of a directory as opposed to the contents of the files themselves) between the files in Git storage and those in Maildir storage on every notification.
 
-The diff itself was calculated by a reading in a list of the contents of each directory and checking to see if each item was a member of the other. I was able to use this as opposed to a more standard method such as computing the longest common subsequence because ordering does not matter and all the filenames are unique. Once the diff has been performed I then check for emails which have the same name but only the flags are changed as this indicates a modification as opposed to a new delivery or deletion. In the next paragraph I will describe how the information outputted from this process is used.
+The diff itself was calculated by a reading in a list of the contents of each directory and checking to see if each item was a member of the other. I used this as opposed to a more standard method such as computing the longest common subsequence because we cannot guarantee ordering. Once the diff has been performed we then check for emails which have the same name but only the flags are changed as this indicates a modification as opposed to a new delivery or deletion. In the next paragraph I will describe how the information outputted from this process is used.
 
 Additions of new emails are easy to handle as we just need to make a new write. Moves are also easy to track as the only name changes come from editing the flags at the end of a file name, the rest of it always remains the same. The more difficult operation comes from deletion as na\"{\i}vely it looks the same as an addition to the alternate store. I solved this by using the Git history: If we look at the previous commit it should be the one before the deletion took place. If the email existed in the previous Git commit then a deletion took place (it is the same for the Maildir and Gitmaildir) so we can safely delete it from the relevant store. In this way we can see that although Git does come with an associated cost it does have benefits from the history that it brings.
 
 \subsection{Concurrency protections} \label{section:concurrency}
 
 Maildir was designed in such a way that people implementing it do not need to worry about locking as long as they follow the correct procedure when writing to a Maildir (as it is all handled by the filesystem). This was one of the main points behind its design but, as explained earlier, this is also why it is not strongly consistent. Implementing a Maildir in Git has meant that all writes to it have to be as part of a Git commit. This unfortunately means that locking is required. The reason for this stems from the structure of a Git repository on disk and can best be explained by an example of when things go wrong. Here is an example of what could happen if two processes try to deliver an email concurrently (using the process described in algorithm \ref{algorithm:addtostore}):
+An example of what could happen if two processes try to deliver an email concurrently (using the process described in algorithm \ref{algorithm:addtostore}) can be seen in figure \ref{fig:concurrentdeliver}.
 
-\begin{enumerate}[topsep=1pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
-\item Processes 1 and 2 start their delivery of emails A and B
-\item A and B are both written to the store returning hashes
-\item Process 1 is returned a modified tree containing A
-\item Process 2 is returned a modified tree containing B
-\item Process 1 commits its new tree and moves forward the HEAD
-\item Process 2 commits its new tree and moves forward the HEAD
-\end{enumerate}
+\begin{figure}head
+  \center
+  \includegraphics{figs/concurrency_collision}
+  \caption{What happens when we try to deliver two emails concurrently. We can see that the end result is that the tree pointed to by the HEAD commit only contains one of the two messages.}
+  \label{fig:concurrentdeliver}
+\end{figure}
 
 At the end of this sequence of actions we have the HEAD reference pointing to a commit which contains email B but not email A. The previous commit in the history will contain email A and not email B. However, the expected result would be for the HEAD commit to contain A and B and the previous one to contain only one of them (depending on order of delivery). The only way to achieve this is some form of concurrency control. I decided that the simplest solution would be to use locking.
 
 I implemented the locking using a combination of the BSD tool/system call flock\cite{manual_flock} and the Mutex module from the OCaml standard library. Flock was necessary for interprocess locks as multiple processes could be trying to write at the same time and should not be allowed to. Flock creates a lock associated with a particular file (I created a file to act as the lock file for any process called \texttt{.global\_lock}) in the filesystem. This can be shared, exclusive or non-blocking. I decided on exclusive for all cases. It would be possible to use a shared lock for reading but this would have added further complexity. Allowing multiple readers would mean creating a separate lock for readers and then handling all the cases involved with multiple reader single writer locks. However, partially written messages are not accessible in the Git tree so the expended effort would not give earlier access to the email. Also, there is unlikely to be a high load of concurrent readers on a single mailbox for most use cases. The reason that it was also necessary to use Mutex was that Flock prevents different processes from holding a lock at the same time but is effectively reentrant for the same process. Therefore if we need concurrency protections and are executing inside the same process then something else to provide the locking. The reason that Mutex could not be used for all the locking is the opposite from Flock: it only works inside a single process.
 
-When adding the locking strategy, I initially put a lock around every Maildir operation. This did work and provided safety, however, more granular locking was possible. The only place where a write could collide is in updating the which commit is the HEAD of the repository. Therefore this is the only operation that we need a lock around. However, unlike the whole-operation locking this does not solve the race-condition described above. The way that this can be resolved is by checking if we have had a race inside the lock. If we have not then it is okay to continue. If we have then our tree is missing at least one change so we have to roll back and try again. Due to the possible need to roll back, this could end up being slower than the purely sequential method. However, I noticed something else about the flow of adding to a store: adding the blob and getting a hash back is an idempotent operation due to the content-addressable storage. This is one of the longer running parts of the process but will never be part of the race so we also only have to every perform it once. Therefore I was able to remove this stage from the roll back. Comparisons of the different strategies can be seen in section \ref{section:evaluation} of this document.
+When adding the locking strategy, I initially put a lock around every Maildir operation. This did work and provided safety, however, more granular locking was possible. The only place where a write could collide is in updating the which commit is the HEAD of the repository. Therefore this is the only operation that we need a lock around. However, unlike the whole-operation locking this does not solve the race-condition described above. The way that this can be resolved is by checking if we have had a race inside the lock. If we have not then it is okay to continue. If we have then our tree is missing at least one change so we have to roll back and try again. Due to the possible need to roll back, this could end up being slower than the purely sequential method. However, I noticed something else about the flow of adding to a store: adding the blob and getting a hash back is an idempotent operation due to the content-addressable storage. This is one of the longer running parts of the process but will never be part of the race so we also only have to every perform it once. Therefore I was able to remove this stage from the roll back.
 
 \subsection{Build system}
 
@@ -222,7 +221,7 @@ Using this system I wrote a plugin that for every operation performs the same op
 
 \section{Repository overview}
 
-The code repository is laid out in a fairly self-descriptive way. The top level directory contains build files; the license; a readme giving instructions on how to build the application, and use the tools and library; and the all the code separated into subdirectories with the same structure as specified in \ref{section:structuraloverview}. There is also a directory of tests which are the unit tests used in the evaluation. Finally there is a folder named evaluation containing the scripts used to perform the performance tests, the code to provide the timing, and the code implementing the Maildir and Mbox functionality to compare against. This is all shown in figure \ref{fig:repositorytree}.
+The code repository is laid out in a fairly self-descriptive way. The top level directory contains build files; the license; a readme giving instructions on how to build the application, use the tools and use library; and the all the code separated into subdirectories with the same structure as specified in \ref{section:structuraloverview}. There is also a directory of tests which are the unit tests used in the evaluation. Finally there is a folder named evaluation containing the scripts used to perform the performance tests, the code to provide the timing, and the code implementing the Maildir and Mbox functionality to compare against. The full layout is shown in \ref{fig:repositorytree}.
 
 \begin{figure}[h]
 \footnotesize

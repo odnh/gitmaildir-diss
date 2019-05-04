@@ -1,0 +1,66 @@
+%% Creator: Inkscape inkscape 0.92.2, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'tmp.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{378.65879084bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.64228442)%
+    \put(0.54306036,0.0205708){\makebox(0,0)[b]{\smash{Number of emails}}}%
+    \put(0.11807924,0.07514386){\makebox(0,0)[b]{\smash{0}}}%
+    \put(0.33060723,0.07514386){\makebox(0,0)[b]{\smash{250}}}%
+    \put(0.54306036,0.07514386){\makebox(0,0)[b]{\smash{500}}}%
+    \put(0.75558834,0.07514386){\makebox(0,0)[b]{\smash{750}}}%
+    \put(0.96811633,0.07514386){\makebox(0,0)[b]{\smash{1000}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{tmp.pdf}}%
+    \put(0.09562119,0.09760191){\makebox(0,0)[rb]{\smash{0}}}%
+    \put(0.09562119,0.23002953){\makebox(0,0)[rb]{\smash{5}}}%
+    \put(0.09562119,0.36245715){\makebox(0,0)[rb]{\smash{10}}}%
+    \put(0.09562119,0.49488477){\makebox(0,0)[rb]{\smash{15}}}%
+    \put(0.09562119,0.62731239){\makebox(0,0)[rb]{\smash{20}}}%
+    \put(0.01409848,0.36245715){\rotatebox{90}{\makebox(0,0)[b]{\smash{time /s}}}}%
+  \end{picture}%
+\endgroup%
