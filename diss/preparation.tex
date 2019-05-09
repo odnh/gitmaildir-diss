@@ -70,7 +70,7 @@ There are many extensions to the standard providing extra features such as:
 
 \begin{itemize}
 \item Notation for email subdirectories (subdirectores are \texttt{.name} and are themselves a Maildir).
-\item Mailbox quotas to add size restrictions (part of Maildir++)
+\item Mailbox quotas to add size restrictions (part of Maildir\texttt{++})
 \end{itemize}
 
 All of these features had to be taken into account for the implementation, but given the new storage structure, some of the rules proved irrelevant such as the \texttt{tmp} directory for deliveries with relinking to \texttt{new} because all the concurrency issues are instead handled with locking and Git. The exact details of the mapping in the implementation can be found in section \ref{section:mapping}.

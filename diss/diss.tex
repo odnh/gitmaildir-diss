@@ -2,6 +2,12 @@
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
+\usepackage{FiraMono}
+\usepackage{charter}   % Bitstream Charter
+\usepackage[T1]{fontenc}
+\usepackage[expert]{mathdesign}
+\usepackage{parskip}   % Paragraph breaks
+\setlength{\parindent}{15pt}
 \usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
 \usepackage{tikz}      % fancy diagrams
 \usepackage{dirtree}   % for directory tree
@@ -10,8 +16,14 @@
 \usepackage{pdfpages}  % include api_docs in appendix
 \usepackage{makecell}  % for overfull title table cell in proforma
 \usepackage{adjustbox} % for the proforma table (resizes to get rid of latex warnings)
+\usepackage[backgroundcolor=gray!10,linecolor=white,roundcorner=5pt,framemethod=TikZ]{mdframed}
 \usepackage{minted}    % code highlighting
+\setminted{fontsize=\footnotesize}
+\surroundwithmdframed{minted}
 \usepackage{enumitem}  % modify enum environments easily
+\usepackage{fancyhdr}
+\setlength{\headheight}{15.5pt}
+\usepackage[absolute]{textpos} % Exact text positioning
 \usepackage[algoruled]{algorithm2e} % for algorithm typesetting
 \usepackage[backend=biber,style=numeric]{biblatex}
 \addbibresource{refs.bib}
@@ -32,7 +44,9 @@
 
 \thispagestyle{empty}
 
-\rightline{\LARGE \textbf{Oliver Hope}}
+\begin{textblock*}{5cm}(14.5cm,1.5cm)
+  {\LARGE \textbf{Oliver Hope}}
+\end{textblock*}
 
 \begin{tikzpicture}[remember picture,overlay]
   \node[anchor=north west,shift={(12mm, -14mm)}] at (current page.north west)
@@ -119,7 +133,11 @@ There have been no special difficulties.
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\pagestyle{headings}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\scshape\small\rightmark}
+\fancyhead[LO]{\scshape\small\leftmark}
 
 \include{introduction}
 
@@ -142,7 +160,7 @@ There have been no special difficulties.
 \appendix
 
 \chapter{Git\_ops module API documentation} \label{section:docs}
-\includepdf[scale=0.9,page=1-,pagecommand={\thispagestyle{headings}}]{figs/api_docs}
+\includepdf[scale=0.9,pages=1-,pagecommand={\thispagestyle{fancy}}]{figs/api_docs}
 
 \chapter{Timing script sample} \label{section:bashtiming}
 

@@ -172,7 +172,7 @@ Additions of new emails are easy to handle as we just need to make a new write. 
 Maildir was designed in such a way that people implementing it do not need to worry about locking as long as they follow the correct procedure when writing to a Maildir (as it is all handled by the filesystem). This was one of the main points behind its design but, as explained earlier, this is also why it is not strongly consistent. Implementing a Maildir in Git has meant that all writes to it have to be as part of a Git commit. This unfortunately means that locking is required. The reason for this stems from the structure of a Git repository on disk and can best be explained by an example of when things go wrong. Here is an example of what could happen if two processes try to deliver an email concurrently (using the process described in algorithm \ref{algorithm:addtostore}):
 An example of what could happen if two processes try to deliver an email concurrently (using the process described in algorithm \ref{algorithm:addtostore}) can be seen in figure \ref{fig:concurrentdeliver}.
 
-\begin{figure}head
+\begin{figure}
   \center
   \includegraphics{figs/concurrency_collision}
   \caption{What happens when we try to deliver two emails concurrently. We can see that the end result is that the tree pointed to by the HEAD commit only contains one of the two messages.}

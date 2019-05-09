@@ -1,6 +1,6 @@
 \chapter{Evaluation} \label{section:evaluation}
 
-In this chapter I will discuss how I discuss whether the project has successfully met its original objectives. I will start by describing how I designed and performed the tests. Then I will show and discuss the results of the tests before finally assessing this results in the contexts of my success criteria. In summary, Gitmaildir underperformed Maildir in every test, and underperformed Mbox in some tests. However, Gitmaildir did outperform Mbox in terms of speedup and sometimes runtime at higher levels of concurrency for all the tests where the bottleneck was parallelisable.
+In this chapter I will discuss whether the project has successfully met its original objectives. I will start by describing how I designed and performed the tests. Then I will show and discuss the results of the tests before finally assessing this results in the contexts of my success criteria. In summary, Gitmaildir underperformed Maildir in every test, and underperformed Mbox in some tests. However, Gitmaildir did outperform Mbox in terms of speedup and sometimes runtime at higher levels of concurrency for all the tests where the bottleneck was parallelisable.
 
 \section{Tests}
 
@@ -71,7 +71,7 @@ This run has ID `D5A89D95-7043-4B4D-A371-1EF83F2C584D`.
 
 \section{Performance tests}
 
-The first metric that I looked into was delivery times. In Figure \ref{fig:tds_combined} we can see that sequentially the delivery times grow linearly, as expected. We can also see from this graph that the same is true for all three mailbox types. The more interesting insight is seen when we compare how the different mailboxes perform at different levels of parallelism. This can be seen for Gitmaildir in Figure \ref{fig:tdpp}. At a quick glance this looks like a reciprocal curve. We would expect such a curve for a completely parallelisable program as the runtime for $n$ cores should be equal to $\frac{1}{n}$. However, unlike a pure implementation of Maildir, Gitmaildir is not completely parallelisable so it is more useful to study a graph of the speedup where we define speedup as in equation.
+The first metric that I looked into was delivery times. In Figure \ref{fig:tds_combined} we can see that sequentially the delivery times grow linearly, as expected. We can also see from this graph that the same is true for all three mailbox types. The more interesting insight is seen when we compare how the different mailboxes perform at different levels of parallelism. This can be seen for Gitmaildir in Figure \ref{fig:tdpp}. At a quick glance this looks like a reciprocal curve. We would expect such a curve for a completely parallelisable program as the runtime for $n$ cores should be equal to $\frac{1}{n}$. However, unlike a pure implementation of Maildir, Gitmaildir is not completely parallelisable so it is more useful to study a graph of the speedup where we define speedup as in equation \ref{eq:speedup}.
 
 \begin{equation} \label{eq:speedup}
 \textrm{speedup} = \frac{\textrm{runtime for 1 core}}{\textrm{runtime for n cores}}
