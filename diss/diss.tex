@@ -94,7 +94,7 @@ am content for my dissertation to be made available to the students and staff of
 Candidate Number:   & \bf 2329F \\
 Project Title:      & \makecell[l]{\bf A strongly consistent index for email using Git \\ \bf and MirageOS.} \\
 Examination:        & \bf Computer Science Tripos -- Part II, June 2019 \\
-Word Count:         & \bf \input{|"texcount -inc -sum -1 diss.tex"}\footnotemark[1] \\
+Word Count:         & \bf \input{|"texcount -inc -sum -1 diss.tex"}\unskip\footnotemark[1] \\
 Line Count:         & 1925\footnotemark[2] \\
 Project Originator: & Dr A.~Madhavapeddy \\
 Supervisor:         & Mr D.~Allsopp \\
@@ -102,18 +102,18 @@ Supervisor:         & Mr D.~Allsopp \\
 }
 \end{adjustbox}
 \footnotetext[1]{This word count was computed by \texttt{texcount -inc -sum -1 diss.tex}}
-\footnotetext[2]{Line count is count of OCaml code excluding comments and blank lines. Also excluded are all testing scripts}
+\footnotetext[2]{Line count is the count of OCaml code excluding comments and blank lines. Also excluded are all testing scripts.}
 
 \stepcounter{footnote}
 
 
 \section*{Original Aims of the Project}
 
-The original aims of the project were to create a new type of maildir on top of a git store. This was to provide the consistency that maildir does not afford whilst mitigating some of the problems with mbox that inspired the creation of maildir in the first place. Futhermore using git for mail storage allows for many novel features that can be implemented, and some examples of such features were a further aim.
+The original aims of the project were to create a new type of Maildir on top of a Git store. This was to provide the consistency that Maildir does not afford whilst mitigating some of the problems with Mbox which inspired the creation of Maildir in the first place. Furthermore, using Git for mail storage allows for many novel features to be implemented. Implementing some examples of such features were a further aim.
 
 \section*{Work Completed}
 
-The core of the project built was a library, gitmaildir, which handles interaction with a gitmaildir. Then there are also two helper tools: \texttt{gitmaildir\_cli} a command-line interface for gitmaildirs and \texttt{gitmaildir\_daemon}, a daemon to sync a gitmaildir with a standard maildir. Also two extensions have been completed: branching based on reply threads and branching for preprocessing of mail for different devices. Of course as part of this it was necessary to design how a gitmaildir would work and write some code to create metrics for performance testing.
+The core of the project built was a library, Gitmaildir, which handles interaction with a Gitmaildir. There are also two helper tools: \texttt{gitmaildir\_cli} a command-line interface for Gitmaildirs and \texttt{gitmaildir\_daemon}, a daemon to sync a Gitmaildir with a standard Maildir. Also, two extensions have been completed: a plugin system allowing the easy writing of plugins and preprocessing mail for lower bandwidth usage in a separate branch. Of course, as part of the project, it was necessary to design how a Gitmaildir would work and write some code for performance testing.
 
 \section*{Special Difficulties}
 
