@@ -1,3 +1,7 @@
+%TC:group tabular 1 1
+%TC:group table 0 1
+%TC:group minted 0 0
+%TC:group algorithm 0 0
 %TC:ignore
 \documentclass[12pt,a4paper,twoside,openright]{report}
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
@@ -101,7 +105,7 @@ Supervisor:         & Mr D.~Allsopp \\
 \end{tabular}
 }
 \end{adjustbox}
-\footnotetext[1]{This word count was computed by \texttt{texcount -inc -sum -1 diss.tex}. It includes all body text, headings, footnotes and captions.}
+\footnotetext[1]{This word count was computed by \texttt{texcount -inc -sum -1 diss.tex}. It includes all body text, headings, footnotes, tables and captions.}
 \footnotetext[2]{Line count is the count of OCaml code excluding comments and blank lines. Also excluded are all testing scripts.}
 
 \stepcounter{footnote}

@@ -45,7 +45,6 @@ All of these operations required interaction between the filesystem, interaction
 
 The library itself was separated into a few different sections depending on functionality. There is the \texttt{Git\_ops} module which implements all the necessary Git features on top of ocaml-git. This includes plumbing command features such as adding blobs to Git trees and other features such as initialising a Gitmaildir. To implement these, I had to follow how Git builds commits to leave the store in a correct state. Algorithm \ref{algorithm:addtostore} shows the method used to add a new blob (i.e. file) to a Git store at a particular location in the tree.
 
-%TC:ignore
 \begin{algorithm}[h]
 \SetAlgoLined
 \DontPrintSemicolon
@@ -90,7 +89,6 @@ $ \textrm{UpdateHeadReference}(newCommit) $\;
 \label{algorithm:addtostore}
 \end{algorithm}
 \medskip
-%TC:endignore
 
 In effect, this is a standard tree traversal where we walk down to the directory we want to update and then walk back up from that point rewriting all the nodes and pointers along the way. Most operations on the Git store involve traversing the tree to a point, making a change of some sort and then walking back up. This is quite useful for implementation as it means that the tree traversal only has to be written once. After writing this, I was then able to add quite a few features such as rename, addition and deletion as different modifications. This was reasonably straightforward because OCaml is a functional language. This means that it has first-class functions so the necessary function can be passed as an argument to the method that implements the tree walking.
 
