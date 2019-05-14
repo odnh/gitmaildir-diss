@@ -1,6 +1,6 @@
 \chapter{Implementation}
 
-In this chapter, I provide an overview of the work undertaken while building this project. I will present how interesting sections were built along with the reasoning behind particular design choices.This includes how I chose to manage the concurrency by making the mutually exclusive section as short as possible to reduce the performance bottleneck, and how the existence of a Git history proved useful in the implementation of a synchronisation daemon that can handle deletions as well as additions to either the Gitmaildir or Maildir parts of the mailbox.
+In this chapter, I provide an overview of the work undertaken while building the project. I will present how interesting sections were built along with the reasoning behind particular design choices.This includes how I chose to manage the concurrency by making the mutually exclusive section as short as possible to reduce the performance bottleneck, and how the existence of a Git history proved useful in the implementation of a synchronisation daemon that can handle deletions as well as additions to either the Gitmaildir or Maildir parts of the mailbox.
 
 \section{Bash prototype}
 
@@ -27,7 +27,7 @@ Originally there were plans to move metadata such as the flags added to the end 
 
 Overall, even with the differences in how information is stored, it is designed in such a way that no information is lost, meaning that conversion between the two is completely reversible.
 
-An additional feature that Git provides on top of the standard filesystem is branching. This is not used in the basic representation of a Gitmaildir; however, it is useful for the extension features. Therefore it is reserved for these and will be described later in section \ref{section:extensions}
+An additional feature that Git provides on top of the standard filesystem is branching. This is not used in the basic representation of a Gitmaildir; however, it is useful for the extension features. Therefore it is reserved for these and will be described later in section~\ref{section:extensions}
 
 \subsection{The Gitmaildir Library}
 
@@ -189,13 +189,13 @@ When adding the locking strategy, I initially put a lock around every Maildir op
 
 \subsection{Build system}
 
-For the project, I chose to use the Dune\cite{code_dune} build system. This was because it has much documentation, has all the features I needed and is quick (it supports concurrent builds). The main benefits to using it were that I was able to create build files for each part of the project separately, mentioning their different dependencies and what they were (e.g. command-line interface or library) and a single file in the root directory to specify it was one project. Given those files, Dune can build, install and test the entire project. Alongside this, it does support some other useful features, one of which is generating HTML documentation from the docstrings in the code. An example of the generated documentation for the Git\_ops module is provided in the appendix, section \ref{section:docs}.
+For the project, I chose to use the Dune\cite{code_dune} build system. This was because it has much documentation, has all the features I needed and is quick (it supports concurrent builds). The main benefits to using it were that I was able to create build files for each part of the project separately, mentioning their different dependencies and what they were (e.g. command-line interface or library) and a single file in the root directory to specify it was one project. Given those files, Dune can build, install and test the entire project. Alongside this, it does support some other useful features, one of which is generating HTML documentation from the docstrings in the code. An example of the generated documentation for the Git\_ops module is provided in the appendix, section\unskip~\ref{section:docs}.
 
 \subsection{Unit tests}
 
 The first thing that had to be done about unit testing was choosing a library to help write them. In OCaml there are a lot of choices of libraries to use and there does not seem to be a single standard that is the most common. Therefore I had to thoroughly assess the different options. It turned out that were two main types of unit testing possible:
 \begin{itemize}
-  \item \textbf{Expect tests:} An example of literate programming\footnote{A style of programming aimed at explaining to humans what we want the computer to do\cite{Knuth1984}} where the testing is written inline with comparisons to what the standard REPL would output. Then, before compilation, an extra syntax rewriter is run, either removing them or making them executable code if we instead plan to run tests. An example can be seen in listing \ref{listing:expecttest}.
+  \item \textbf{Expect tests:} An example of literate programming\footnote{A style of programming aimed at explaining to humans what we want the computer to do\cite{Knuth1984}} where the testing is written inline with comparisons to what the standard REPL would output. Then, before compilation, an extra syntax rewriter is run, either removing them or making them executable code if we instead plan to run tests. An example can be seen in listing\unskip~\ref{listing:expecttest}.
   \item \textbf{Standard tests:} These are what most developers will be more used to. You write them in a separate file and in them describe how to compare the results to check if they are correct.
 \end{itemize}
 
@@ -223,10 +223,11 @@ Using this system, I wrote a plugin that for every operation performs the same o
 
 \section{Repository overview}
 
-The code repository is laid out in a fairly self-descriptive way. The top-level directory contains build files; the license; a readme giving instructions on how to build the application, use the tools and use the library; and the all the code separated into subdirectories with the same structure as specified in \ref{section:structuraloverview}. There is also a directory of tests which are the unit tests used in the evaluation. Finally, there is a folder named evaluation containing the scripts used to perform the performance tests, the code to provide the timing, and the code implementing the Maildir and Mbox functionality to compare against. The full layout is shown in \ref{fig:repositorytree}.
+The top-level directory contains build files; the license; a readme giving instructions on how to build the application, use the tools and use the library; and the all the code separated into subdirectories with the structure as specified in \ref{section:structuraloverview}. There is a directory of tests which are the unit tests used in the evaluation. Finally, there is a folder named evaluation containing the scripts used for the performance tests, the code to provide the timing, and the code implementing the Maildir and Mbox functionality to compare against. The full layout is shown in \ref{fig:repositorytree}. It is important to note that all the code in the repository is written by me with external libraries being brought in by opam and dune as described in the readme file.
 
 \begin{figure}[h]
 \footnotesize
+\renewcommand\DTstylecomment{\rmfamily\fontfamily{bch}}
 \dirtree{%
 .1 /.
 .2 evaluation.
@@ -241,6 +242,6 @@ The code repository is laid out in a fairly self-descriptive way. The top-level 
   The top level also holds the license, readme and opam installation files{.}
    \end{minipage}.
 }
-\caption{File tree of the repository with descriptions of the uses of each folder}
+\caption{File tree of the repository with descriptions of the uses of each folder.}
 \label{fig:repositorytree}
 \end{figure}

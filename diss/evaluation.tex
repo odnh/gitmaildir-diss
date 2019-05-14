@@ -51,7 +51,7 @@ Working out how to perform the concurrency tests proved slightly problematic as 
 
 \section{Functionality tests} \label{section:functionality_tests}
 
-Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repository. This means that as long as the tests themselves did not miss out any corner cases (I made sure that the tests provide full coverage of the library functions), then Gitmaildir provides all the functionality intended and that this functionality works correctly. However, It is still possible that the code contains residual bugs not found by these tests.
+Figure \ref{fig:unittests} is a snippet of the output from a run of the unit tests. We can see that it says all tests ran successfully. The entire output can be seen by following the instructions in the readme of the code repository. This means that as long as the tests themselves did not miss out any corner cases (I made sure that the tests provide full coverage of the library functions), then Gitmaildir provides all the functionality intended and that this functionality works correctly. However, it is still possible that the code contains residual bugs not found by these tests.
 
 \begin{figure}[h]
 \centering
@@ -82,7 +82,7 @@ The second extension was to build a plugin that creates a mirror mailbox where e
 The first success criterion stated that the project would be evaluated against:
 
 \begin{quote}
-  Implementation of a working Git overlay on top of the filesystem in MirageOS.
+  Implementation of a working Git overlay on top of the filesystem in \mbox{MirageOS}.
 \end{quote}
 
 This was provided by the operations that I built on top of the ocaml-git library allowing a mixture of Git plumbing commands and Git porcelain commands to be executed in OCaml. The unit tests prove that the functionality works. As ocaml-git works on MirageOS (it was written as part of the MirageOS project) then a library that uses it as the backend will also work on MirageOS, so the second part of the criterion is satisfied. This has been checked on MirageOS by writing a simple application that commits a file to a Git store using my library and it worked successfully. As the rest of ocaml-git works on MirageOS and my library passes all the unit tests, it can be inferred that my Git overlay will work on top of the filesystem in MirageOS.
@@ -149,7 +149,7 @@ A similar graph for standard Maildir and Mbox can be seen in figure \ref{fig:tdp
     \label{fig:tdpp_speedup_combined}
 \end{figure}
 
-It is also important to compare the raw speeds as well as speedup, and we can see that Gitmaildir also underperforms here. We can see in figure \ref{fig:tdpp_combined} that Gitmaildir is much slower (around ten times) than Mbox and Maildir even when running in parallel. This is unsurprising given that it is doing far more work. For each deliver, Gitmaildir writes to three files, performs three hashes, and also has to encode the data and this does not include reading from the store at the start. Mbox and Maildir both only need to write raw data into a single file. However, the real problem seems to be that it does not benefit from being more parallel even as much as Mbox does.
+It is also important to compare the raw speeds as well as speedup, and we can see that Gitmaildir also underperforms here. We can see in figure \ref{fig:tdpp_combined} that Gitmaildir is much slower (around ten times) than Mbox and Maildir even when running in parallel. This is unsurprising given that it is doing far more work. For each delivery, Gitmaildir writes to three files, performs three hashes, and also has to encode the data and this does not include reading from the store at the start. Mbox and Maildir both only need to write raw data into a single file. However, the real problem seems to be that it does not benefit from being more parallel even as much as Mbox does.
 
 \begin{figure}[h]
     \centering
@@ -165,7 +165,7 @@ It is also important to compare the raw speeds as well as speedup, and we can se
     \label{fig:tmp_combined}
 \end{figure}
 
-As well as email delivery, I looked into the performance of editing email metadata. This differs from delivery because it involves retrieving the correct email in the mailbox and modifying it in some way (a write into the file for Mbox, a filename change for the other two). Figure \ref{fig:tmp_combined} shows how the different mailboxes performed at a fixed level of parallelism. We can see a very different result here than before. Whereas for deliver Gitmaildir was significantly slower than the other two, it is now Mbox that is significantly slower (roughly five times slower than Gitmaildir and ten times slower than Maildir). This comes down to the fundamental difference between how the two systems store email and email metadata. For Maildirs, because its flags are at the end of the filename, we do not have to open files and then search inside them, unlike Mbox. The greatest speedup probably can be attributed then to the fact that a Mbox is not indexed, and although a Maildir is not explicitly indexed either\footnote{Some implementations, notably Dovecot\cite{dovecot_maildir}, actually do lock the Maildir to provide an index, however this means that we immediately lose its concurrency benefit.}, the directory itself is what makes it much faster to get to the email to modify.
+As well as email delivery, I looked into the performance of editing email metadata. This differs from delivery because it involves retrieving the correct email in the mailbox and modifying it in some way (a write into the file for Mbox, a filename change for the other two). Figure \ref{fig:tmp_combined} shows how the different mailboxes performed at a fixed level of parallelism. We can see a very different result here than before. Whereas for delivery Gitmaildir was significantly slower than the other two, it is now Mbox that is significantly slower (roughly five times slower than Gitmaildir and ten times slower than Maildir). This comes down to the fundamental difference between how the two systems store email and email metadata. For Maildirs, because its flags are at the end of the filename, we do not have to open files and then search inside them, unlike Mbox. The greatest speedup probably can be attributed then to the fact that a Mbox is not indexed, and although a Maildir is not explicitly indexed either\footnote{Some implementations, notably Dovecot\cite{dovecot_maildir}, actually do lock the Maildir to provide an index, however this means that we immediately lose its concurrency benefit.}, the directory itself is what makes it much faster to get to the email to modify.
 
 \begin{figure}[h]
     \centering
